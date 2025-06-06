@@ -1,6 +1,6 @@
-# Predict Chemical Boiling Point
+# Predict Organic Chemical Boiling Point
 ## Introduction 
-This project goes through the ML project cycle of data collection, data pre-processing and feature enginneering, model training and validation. Five classic ML architectures, including Linear Regression, Random Forest, XGBoost, Neural Network, and Support Vector Regression, were trained and evaluated for the prediction of chemical boiling point.
+This project goes through the ML project cycle of data collection, data pre-processing and feature enginneering, model training and validation. Five classic ML architectures, including Linear Regression, Random Forest, XGBoost, Neural Network, and Support Vector Regression, were trained and evaluated for the prediction of orgamic chemical boiling point.
 
 ## Data Collection
 Chemical structure data is widely accessible online and I collected a large dataset of chemical compounds and their chemical properties from PubChem, a trusted and reputable chemical database. The file "compound_property_from_PubChem.csv" is downloaded from PubChem (https://pubchem.ncbi.nlm.nih.gov/). It contains 324,628 records. I mannually deleted some columns of the raw data file downloaded, mainly string type columns, to reduce the file size.
