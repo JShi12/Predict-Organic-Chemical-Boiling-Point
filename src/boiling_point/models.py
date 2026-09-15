@@ -60,7 +60,7 @@ SVR_PARAM_GRID = {
 
 def train_ridge_cv(X_train_scaled, y_train_scaled, param_grid=None, cv=5):
     grid = GridSearchCV(Ridge(), param_grid or RIDGE_PARAM_GRID, cv=cv,
-                         scoring="neg_mean_squared_error", verbose=1)
+                         scoring="neg_mean_squared_error", verbose=0)
     grid.fit(X_train_scaled, y_train_scaled)
     return grid
 
@@ -68,7 +68,7 @@ def train_ridge_cv(X_train_scaled, y_train_scaled, param_grid=None, cv=5):
 def train_random_forest_cv(X_train, y_train, param_grid=None, cv=5):
     grid = GridSearchCV(
         RandomForestRegressor(random_state=0), param_grid or RF_PARAM_GRID,
-        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=1,
+        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=0,
     )
     grid.fit(X_train, y_train)
     return grid
@@ -78,7 +78,7 @@ def train_xgboost_cv(X_train, y_train, param_grid=None, cv=5):
     grid = GridSearchCV(
         XGBRegressor(objective="reg:squarederror", random_state=0),
         param_grid or XGB_PARAM_GRID,
-        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=1,
+        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=0,
     )
     grid.fit(X_train, y_train)
     return grid
@@ -87,7 +87,7 @@ def train_xgboost_cv(X_train, y_train, param_grid=None, cv=5):
 def train_mlp_cv(X_train_scaled, y_train_scaled, param_grid=None, cv=5):
     grid = GridSearchCV(
         MLPRegressor(max_iter=1000, tol=1e-4, random_state=0), param_grid or MLP_PARAM_GRID,
-        cv=cv, scoring="neg_mean_squared_error", verbose=1, n_jobs=-1,
+        cv=cv, scoring="neg_mean_squared_error", verbose=0, n_jobs=-1,
     )
     grid.fit(X_train_scaled, y_train_scaled)
     return grid
@@ -96,7 +96,7 @@ def train_mlp_cv(X_train_scaled, y_train_scaled, param_grid=None, cv=5):
 def train_svr_cv(X_train_scaled, y_train_scaled, param_grid=None, cv=5):
     grid = GridSearchCV(
         SVR(), param_grid or SVR_PARAM_GRID, cv=cv,
-        scoring="neg_mean_squared_error", verbose=1, n_jobs=-1,
+        scoring="neg_mean_squared_error", verbose=0, n_jobs=-1,
     )
     grid.fit(X_train_scaled, y_train_scaled)
     return grid
@@ -120,7 +120,7 @@ def retrain_champion(X_train_val, y_train_val, param_grid=None, cv=5):
     grid = GridSearchCV(
         XGBRegressor(objective="reg:squarederror", random_state=0),
         param_grid or XGB_RETRAIN_PARAM_GRID,
-        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=1,
+        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=0,
     )
     grid.fit(X_train_val, y_train_val)
     return grid
