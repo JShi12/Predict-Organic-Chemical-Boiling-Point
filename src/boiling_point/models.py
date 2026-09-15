@@ -86,7 +86,7 @@ def train_xgboost_cv(X_train, y_train, param_grid=None, cv=5):
 
 def train_mlp_cv(X_train_scaled, y_train_scaled, param_grid=None, cv=5):
     grid = GridSearchCV(
-        MLPRegressor(max_iter=1000, tol=1e-4), param_grid or MLP_PARAM_GRID,
+        MLPRegressor(max_iter=1000, tol=1e-4, random_state=0), param_grid or MLP_PARAM_GRID,
         cv=cv, scoring="neg_mean_squared_error", verbose=1, n_jobs=-1,
     )
     grid.fit(X_train_scaled, y_train_scaled)

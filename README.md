@@ -96,10 +96,10 @@ pytest tests/
 | Linear Regression (Ridge) | 37.1 | 47.9 |
 | Random Forest | 39.5 | 52.5 |
 | **XGBoost (champion)** | 35.7 | 49.0 |
-| Neural Network | 29.4 | 45.4 |
+| Neural Network | 29.5 | 45.3 |
 | Support Vector Regression | 38.4 | 51.1 |
 
-All models show higher validation error than training error, indicating some overfitting. In this run, the **Neural Network** actually achieves the lowest error on *both* the training and validation sets — though its train→validation gap (16 K) is the largest of the five, making it the least stable of the models tested. **XGBoost** was selected as the champion architecture instead: its validation performance is close behind the Neural Network, but it is less sensitive to feature scaling and outliers, and its built-in feature importances give a directly interpretable view of which chemical properties drive boiling point (see [Feature Importance](#feature-importance) below). As the split-sensitivity note below illustrates, model rankings on this dataset shift with the specific train/validation/test split given its modest size (1,588 compounds) — re-running with a different split can change which model comes out ahead.
+All models show higher validation error than training error, indicating some overfitting. In this run, the **Neural Network** actually achieves the lowest error on *both* the training and validation sets — though its train→validation gap (15.7 K) is the largest of the five, making it the least stable of the models tested. **XGBoost** was selected as the champion architecture instead: its validation performance is close behind the Neural Network, but it is less sensitive to feature scaling and outliers, and its built-in feature importances give a directly interpretable view of which chemical properties drive boiling point (see [Feature Importance](#feature-importance) below). As the split-sensitivity note below illustrates, model rankings on this dataset shift with the specific train/validation/test split given its modest size (1,588 compounds) — re-running with a different split can change which model comes out ahead.
 
 The champion XGBoost model was retrained on the combined training + validation set, then evaluated on the untouched test set:
 
