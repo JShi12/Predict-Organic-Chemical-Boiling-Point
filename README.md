@@ -99,7 +99,7 @@ pytest tests/
 | Neural Network | 29.4 | 45.4 |
 | Support Vector Regression | 38.4 | 51.1 |
 
-All models show higher validation error than training error, indicating some overfitting — most pronounced for the Neural Network and Support Vector Regression models. **XGBoost** was selected as the champion architecture: it combines a low training error with lower variance/overfitting than the other tree- and kernel-based alternatives, and (unlike Ridge and SVR) is less sensitive to outliers.
+All models show higher validation error than training error, indicating some overfitting. In this run, the **Neural Network** actually achieves the lowest error on *both* the training and validation sets — though its train→validation gap (16 K) is the largest of the five, making it the least stable of the models tested. **XGBoost** was selected as the champion architecture instead: its validation performance is close behind the Neural Network, but it is less sensitive to feature scaling and outliers, and its built-in feature importances give a directly interpretable view of which chemical properties drive boiling point (see [Feature Importance](#feature-importance) below). As the split-sensitivity note below illustrates, model rankings on this dataset shift with the specific train/validation/test split given its modest size (1,588 compounds) — re-running with a different split can change which model comes out ahead.
 
 The champion XGBoost model was retrained on the combined training + validation set, then evaluated on the untouched test set:
 
