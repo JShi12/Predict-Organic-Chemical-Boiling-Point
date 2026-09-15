@@ -136,3 +136,9 @@ dmypy.json
 data/
 depricated/
 *.pkl
+
+# Large raw data file (see README for re-download instructions)
+compound_property_from_PubChem.csv
+
+# Claude Code local tooling
+.claude/
