@@ -35,7 +35,11 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 │   ├── features.py                 # SMILES feature engineering, feature/target selection
 │   ├── preprocessing.py            # train/val/test split, scaling
 │   ├── models.py                   # GridSearchCV training & evaluation per architecture
-│   └── viz.py                      # shared plotting functions
+│   ├── evaluation.py               # split-sensitivity checks, multi-model evaluation helpers
+│   ├── viz.py                      # shared plotting functions
+│   └── nist_scraper.py             # NIST WebBook scraper for extending the dataset
+├── scripts/
+│   └── scrape_nist_boiling_points.py   # CLI entry point for the NIST scraper
 ├── tests/                          # unit tests for src/boiling_point
 ├── results/images/                 # exported result plots (used in this README)
 ├── compound_boiling_points_from_literature.xlsx
@@ -53,6 +57,16 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 The two datasets are merged on compound name, giving **1,588 entries** used for modeling.
 
 > **Note:** `compound_property_from_PubChem.csv` (~77MB) is not committed to this repository due to its size — it's listed in `.gitignore`. To reproduce this project, download it from PubChem and select the columns `cmpdname, mw, mf, polararea, hbonddonor, hbondacc, rotbonds, heavycnt, isosmiles, charge`, then place it at the repo root (`boiling_point.data.load_pubchem_data` handles the column selection automatically).
+
+### Extending the Dataset
+
+The error analysis below shows compounds with high polar area and/or rotatable bonds are underrepresented and disproportionately account for the largest prediction errors. `scripts/scrape_nist_boiling_points.py` looks up boiling points for exactly that region on the [NIST Chemistry WebBook](https://webbook.nist.gov/chemistry/) — a public, experimentally-measured reference source — for PubChem candidates not already in `compound_boiling_points_from_literature.xlsx`.
+
+```bash
+python scripts/scrape_nist_boiling_points.py [output_csv]
+```
+
+This is a long-running, network-bound script (NIST's `robots.txt` crawl-delay is 5 seconds, and most candidates need 1-2 requests), so it can take several hours for the full candidate pool. Progress is written to the output CSV incrementally, and reruns automatically resume by skipping compound names already recorded there. It's not affiliated with, maintained by, or endorsed by NIST.
 
 ## Setup & Usage
 

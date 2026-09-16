@@ -9,3 +9,5 @@ openpyxl
 jupyter
 nbconvert
 pytest
+nistchempy
+beautifulsoup4
