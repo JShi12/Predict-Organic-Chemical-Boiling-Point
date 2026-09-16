@@ -48,6 +48,21 @@ def repeated_split_comparison(X, y, tuned_estimators: dict, seeds) -> pd.DataFra
     return pd.DataFrame(rows)
 
 
+def evaluate_tuned_models(tuned_estimators: dict, X_val, X_val_scaled, y_val, scaler_y) -> pd.DataFrame:
+    """Validation RMSE for a dict of already-fitted best_estimator_ objects
+    on one fixed split (handles scaled vs unscaled models via SCALED_MODELS)."""
+    rows = []
+    for name, model in tuned_estimators.items():
+        if name in SCALED_MODELS:
+            pred_scaled = model.predict(X_val_scaled)
+            pred = scaler_y.inverse_transform(pred_scaled.reshape(-1, 1)).flatten()
+        else:
+            pred = model.predict(X_val)
+        rmse = float(np.sqrt(mean_squared_error(y_val, pred)))
+        rows.append({"model": name, "rmse": rmse})
+    return pd.DataFrame(rows).set_index("model")
+
+
 def summarize(results: pd.DataFrame) -> pd.DataFrame:
     """Mean/std validation RMSE per model, sorted best (lowest mean) first."""
     return (
