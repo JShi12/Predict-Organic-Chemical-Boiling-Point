@@ -12,6 +12,14 @@ def load_literature_data(path: str) -> pd.DataFrame:
     return pd.read_excel(path)
 
 
+def load_nist_data(path: str) -> pd.DataFrame:
+    """Load boiling points scraped from NIST WebBook (see
+    scripts/scrape_nist_boiling_points.py), targeting the high polar-area/
+    rotatable-bond region underrepresented in the literature dataset. Same
+    schema as load_literature_data (cmpdname, boiling_point_kelvin)."""
+    return pd.read_csv(path)
+
+
 def load_pubchem_data(path: str, columns=None) -> pd.DataFrame:
     """Load the PubChem physicochemical property dataset, keeping only
     the columns useful for modeling (the raw download also has string
