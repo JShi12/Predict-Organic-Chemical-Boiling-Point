@@ -126,13 +126,15 @@ def retrain_ensemble_members(X, y, cv=5):
     Returns (ridge_grid, xgb_grid, nn_grid); scaling for Ridge/NN is fit
     fresh on X/y and handled internally.
     """
+    y_arr = np.asarray(y, dtype=float)
+
     scaler_X = StandardScaler().fit(X)
     X_scaled = scaler_X.transform(X)
-    scaler_y = StandardScaler().fit(y.values.reshape(-1, 1))
-    y_scaled = scaler_y.transform(y.values.reshape(-1, 1)).ravel()
+    scaler_y = StandardScaler().fit(y_arr.reshape(-1, 1))
+    y_scaled = scaler_y.transform(y_arr.reshape(-1, 1)).ravel()
 
     ridge_grid = train_ridge_cv(X_scaled, y_scaled, cv=cv)
-    xgb_grid = train_xgboost_cv(X, y, param_grid=XGB_RETRAIN_PARAM_GRID, cv=cv)
+    xgb_grid = train_xgboost_cv(X, y_arr, param_grid=XGB_RETRAIN_PARAM_GRID, cv=cv)
     nn_grid = train_mlp_cv(X_scaled, y_scaled, cv=cv)
     return ridge_grid, xgb_grid, nn_grid
 
