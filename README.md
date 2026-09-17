@@ -153,6 +153,7 @@ This is consistent with chemistry theory: molecular weight drives Van der Waals 
 1. Five classic ML models were evaluated for predicting chemical compound boiling points on a dataset of 1,588 entries. Model performance was found to be sensitive to the train/validation/test split, given the modest dataset size — collecting more data is recommended as a follow-up. Since no single architecture was reliably better than the others, a simple-averaging ensemble of Ridge, XGBoost, and a Neural Network is used instead of a single champion model.
 2. Feature selection is naturally embedded in the training process of the XGBoost component of the ensemble; the dominant features are molecular weight, oxygen atom count, H-bond donor count, polar area, side-chain count, and rotatable bond count.
 3. To further improve model performance, collecting more data — particularly compounds with large polar area and/or rotatable bond counts — is recommended for re-training.
+4. Cross-referencing the recurring large-residual outlier compounds against independent sources surfaced likely data-entry errors of roughly 90–100 K in two of them, both understating boiling point: 2,6-Nonadien-1-ol (369.65 K here vs 469.15 K per PubChem's WHO/FAO JECFA citation) and N-Methyldodecylamine (382.15 K here vs 473.15 K per a commercial chemical supplier site). At least part of this dataset's hardest-to-predict cases may reflect mislabeled training data rather than genuine chemical difficulty — a full audit against primary sources is recommended alongside collecting more data.
 
 ## License
 
