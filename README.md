@@ -122,9 +122,9 @@ The ensemble was fit on the combined training + validation set, then evaluated o
 
 | Metric | Value |
 |---|---|
-| 5-fold CV RMSE (train+val) | 36.4 K |
-| **Test RMSE** | **26.1 K** |
-| Test MAE | 15.3 K |
+| 5-fold CV RMSE (train+val) | 35.7 K |
+| **Test RMSE** | **26.2 K** |
+| Test MAE | 15.2 K |
 | Test R² | 0.95 |
 
 ![Residual plot on the test set](results/images/residual_plot.png)
@@ -139,19 +139,19 @@ The XGBoost component of the ensemble has a built-in feature importance (mean de
 
 | Feature | Importance |
 |---|---|
-| Molecular weight (`mw`) | 0.588 |
-| Oxygen atom count (`O_cnt`) | 0.160 |
-| H-bond donor count (`hbonddonor`) | 0.068 |
-| Polar area (`polararea`) | 0.063 |
-| Rotatable bonds (`rotbonds`) | 0.031 |
-| Side-chain count (`side_chain_cnt`) | 0.029 |
+| Molecular weight (`mw`) | 0.539 |
+| Oxygen atom count (`O_cnt`) | 0.184 |
+| H-bond donor count (`hbonddonor`) | 0.072 |
+| Polar area (`polararea`) | 0.071 |
+| Side-chain count (`side_chain_cnt`) | 0.038 |
+| Rotatable bonds (`rotbonds`) | 0.028 |
 
 This is consistent with chemistry theory: molecular weight drives Van der Waals forces, while polarity and oxygen content drive hydrogen bonding and dipole-dipole attraction — the major intermolecular forces governing boiling point.
 
 ## Conclusions & Future Work
 
 1. Five classic ML models were evaluated for predicting chemical compound boiling points on a dataset of 1,588 entries. Model performance was found to be sensitive to the train/validation/test split, given the modest dataset size — collecting more data is recommended as a follow-up. Since no single architecture was reliably better than the others, a simple-averaging ensemble of Ridge, XGBoost, and a Neural Network is used instead of a single champion model.
-2. Feature selection is naturally embedded in the training process of the XGBoost component of the ensemble; the dominant features are molecular weight, oxygen atom count, H-bond donor count, polar area, rotatable bond count, and side-chain count.
+2. Feature selection is naturally embedded in the training process of the XGBoost component of the ensemble; the dominant features are molecular weight, oxygen atom count, H-bond donor count, polar area, side-chain count, and rotatable bond count.
 3. To further improve model performance, collecting more data — particularly compounds with large polar area and/or rotatable bond counts — is recommended for re-training.
 
 ## License
