@@ -5,6 +5,7 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 from xgboost import XGBRegressor
 
@@ -115,15 +116,25 @@ def rmse_from_cv_scaled(grid_search: GridSearchCV, y_train) -> float:
     return float(np.sqrt(mse_unscaled))
 
 
-def retrain_champion(X_train_val, y_train_val, param_grid=None, cv=5):
-    """Retrain the champion (XGBoost) architecture on train+val combined."""
-    grid = GridSearchCV(
-        XGBRegressor(objective="reg:squarederror", random_state=0),
-        param_grid or XGB_RETRAIN_PARAM_GRID,
-        scoring=REGRESSION_SCORING, cv=cv, refit="neg_mean_squared_error", verbose=0,
-    )
-    grid.fit(X_train_val, y_train_val)
-    return grid
+def retrain_ensemble_members(X, y, cv=5):
+    """Re-tune Ridge, XGBoost, and the Neural Network via fresh GridSearchCV
+    directly on the given data (typically train+val combined), rather than
+    reusing hyperparameters found on a smaller split -- optimal
+    hyperparameters can genuinely shift with dataset size. Mirrors the rigor
+    the notebook previously applied only to XGBoost's retrain step.
+
+    Returns (ridge_grid, xgb_grid, nn_grid); scaling for Ridge/NN is fit
+    fresh on X/y and handled internally.
+    """
+    scaler_X = StandardScaler().fit(X)
+    X_scaled = scaler_X.transform(X)
+    scaler_y = StandardScaler().fit(y.values.reshape(-1, 1))
+    y_scaled = scaler_y.transform(y.values.reshape(-1, 1)).ravel()
+
+    ridge_grid = train_ridge_cv(X_scaled, y_scaled, cv=cv)
+    xgb_grid = train_xgboost_cv(X, y, param_grid=XGB_RETRAIN_PARAM_GRID, cv=cv)
+    nn_grid = train_mlp_cv(X_scaled, y_scaled, cv=cv)
+    return ridge_grid, xgb_grid, nn_grid
 
 
 def evaluate_on_test(model, X_test, y_test) -> dict:
