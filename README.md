@@ -23,7 +23,7 @@ Predicting the boiling point of organic chemical compounds from their molecular 
 
 This project goes through a full ML project cycle: data collection, data pre-processing and feature engineering, model training and validation, and model evaluation. Five classic ML architectures — Linear Regression (Ridge), Random Forest, XGBoost, Neural Network, and Support Vector Regression — were trained and evaluated for predicting the boiling point of organic chemical compounds.
 
-**Summary of results:** since all five architectures showed comparable validation performance (confirmed with a split-sensitivity analysis — repeating the comparison across many resampled splits), a simple-averaging **ensemble of Ridge, XGBoost, and a Neural Network** is used instead of a single "champion" model. Fit on the combined training + validation data, it achieved a 5-fold CV RMSE of ≈36 K, and evaluated on the held-out test set it achieved an RMSE of ≈26 K, MAE of ≈15 K, and R² of 0.95.
+**Summary of results:** since all five architectures showed comparable validation performance (confirmed with a split-sensitivity analysis — repeating the comparison across many resampled splits), a simple-averaging **ensemble of Ridge, XGBoost, and a Neural Network** is used instead of a single "champion" model. The ensemble model achieved an RMSE of ≈26 K, MAE of ≈15 K, and R² of 0.95 on the held-out test set. 
 
 ## Project Structure
 
@@ -96,7 +96,7 @@ pytest tests/
   1. Split the data into training/validation/test (60/20/20).
   2. Cross-validate and tune hyperparameters on the training set with `GridSearchCV` for each candidate architecture.
   3. Compare the tuned models on the validation set — and check, via repeated resampling, whether any architecture is reliably better rather than just luckier on one split.
-  4. Since no architecture proved reliably better, build a simple-averaging ensemble from one representative of each distinct model family (Ridge, XGBoost, Neural Network), fit it on training + validation data, then evaluate it on the held-out test set.
+  4. Re-train the chosen model architecture on training + validation data, then evaluate it on the held-out test set.
 
 * **Five architectures evaluated:** Linear Regression (Ridge), Random Forest, XGBoost, Neural Network (MLP), Support Vector Regression.
 
@@ -116,7 +116,7 @@ pytest tests/
 
 All models show higher validation error than training error, indicating some overfitting. The **Neural Network** actually achieves the lowest error on *both* the training and validation sets here — though its train→validation gap (15.7 K) is the largest of the five, making it the least stable of the models tested on this particular split.
 
-A repeated-resampling check (refitting each architecture's tuned hyperparameters across 10 different train/val splits) shows the mean ± std validation RMSE ranges overlap substantially across all five architectures — none of the differences above are large relative to the spread, so picking a single "champion" would largely reflect which rows landed in the validation set on this one split, not a real difference in architecture quality. Instead, a **simple-averaging ensemble of Ridge, XGBoost, and the Neural Network** is used — one representative of each genuinely different inductive bias (linear/regularized, tree/boosting, nonlinear), which is what makes averaging predictions useful rather than just noise. Random Forest is left out as redundant with XGBoost (same tree-based family, and XGBoost had the edge in most single-split comparisons); SVR is left out for being the least stable across splits (highest variance, ±6.6 K vs ±3.3-5.3 K for the others) despite a competitive mean.
+A repeated-resampling check (refitting each architecture's tuned hyperparameters across 10 different train/val splits by changing the ramdom_state seed) shows the mean ± std validation RMSE ranges overlap substantially across all five architectures — none of the differences above are large relative to the spread, so picking a single "champion" would largely reflect which rows landed in the validation set on this one split, not a real difference in architecture quality. Instead, a **simple-averaging ensemble of Ridge, XGBoost, and the Neural Network** is used — one representative of each genuinely different inductive bias (linear/regularized, tree/boosting, nonlinear), which is what makes averaging predictions useful rather than just noise. Random Forest is left out as redundant with XGBoost (same tree-based family, and XGBoost had the edge in most single-split comparisons); SVR is left out for being the least stable across splits (highest variance, ±6.6 K vs ±3.3-5.3 K for the others) despite a competitive mean.
 
 The ensemble was fit on the combined training + validation set, then evaluated on the untouched test set:
 
