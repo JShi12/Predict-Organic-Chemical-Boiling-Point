@@ -142,3 +142,6 @@ compound_property_from_PubChem.csv
 
 # Claude Code local tooling
 .claude/
+
+# Working plan for the active-learning work (kept local)
+docs/active_learning_plan.md
