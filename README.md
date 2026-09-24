@@ -16,6 +16,7 @@ Predicting the boiling point of organic chemical compounds from their molecular 
 - [Methodology](#methodology)
 - [Results](#results)
 - [Feature Importance](#feature-importance)
+- [Active Learning: Which Compounds to Measure Next](#active-learning-which-compounds-to-measure-next)
 - [Conclusions & Future Work](#conclusions--future-work)
 - [License](#license)
 
@@ -30,6 +31,7 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 ```
 .
 ├── Boiling_Point_Predicter.ipynb   # main analysis notebook (narrative + EDA)
+├── Active_Learning.ipynb           # which compounds to measure next: GP-driven active learning
 ├── src/boiling_point/              # reusable pipeline code
 │   ├── data.py                     # loading & merging datasets
 │   ├── features.py                 # SMILES feature engineering, feature/target selection
@@ -38,11 +40,14 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 │   ├── evaluation.py               # split-sensitivity checks, multi-model evaluation helpers
 │   ├── ensemble.py                 # simple-averaging ensemble across model families
 │   ├── viz.py                      # shared plotting functions
+│   ├── active_learning.py          # GP / bootstrap selectors, simulated labelling campaigns
 │   └── nist_scraper.py             # NIST WebBook scraper for extending the dataset
 ├── scripts/
-│   └── scrape_nist_boiling_points.py   # CLI entry point for the NIST scraper
+│   ├── scrape_nist_boiling_points.py       # CLI entry point for the NIST scraper (heuristic rule)
+│   ├── run_active_learning_simulation.py   # retrospective active-learning benchmark
+│   └── run_model_driven_nist_round.py      # real NIST round with GP-chosen compounds
 ├── tests/                          # unit tests for src/boiling_point
-├── results/images/                 # exported result plots (used in this README)
+├── results/                       # simulation results (CSV) and exported plots (images/)
 ├── compound_boiling_points_from_literature.xlsx
 ├── compound_property_from_PubChem.csv   # not committed — see Data below
 ├── requirements.txt
@@ -75,7 +80,7 @@ This is a long-running, network-bound script (NIST's `robots.txt` crawl-delay is
 git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 
-python -m venv venv
+python3.11 -m venv venv          # Python 3.11+ (BoTorch needs >= 3.10)
 source venv/bin/activate          # on Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
@@ -148,12 +153,34 @@ The XGBoost component of the ensemble has a built-in feature importance (mean de
 
 This is consistent with chemistry theory: molecular weight drives Van der Waals forces, while polarity and oxygen content drive hydrogen bonding and dipole-dipole attraction — the major intermolecular forces governing boiling point.
 
+## Active Learning: Which Compounds to Measure Next
+
+The dataset extension above chose compounds with a hand-written rule (polar area ≥ 40 or rotatable bonds ≥ 14). [`Active_Learning.ipynb`](Active_Learning.ipynb) tests whether letting a model choose improves the ensemble faster. It uses a retrospective simulation: start from 50 random labels out of the 1,693, reveal more in rounds chosen by each strategy, and retrain the Ridge + XGBoost + NN ensemble at checkpoints. Scoring is on a fixed test set stratified on the hard region, over 10 seeds.
+
+Strategies: **random**, the **heuristic rule**, **GP uncertainty** (BoTorch `SingleTaskGP` with an ARD kernel and conditioned greedy batches), and a **bootstrap XGBoost** ensemble (15 bootstrapped models, picking where they disagree most).
+
+![Active learning curves](results/images/active_learning_curves.png)
+
+| To match random's test RMSE at 550 labels | Labels needed | Saving |
+|---|---|---|
+| Bootstrap XGBoost | ~290 | ~47% |
+| GP uncertainty | ~360 | ~35% |
+| Heuristic rule | ~400 | ~27% |
+
+- **Choosing which compounds to label pays off.** Between ~200 and ~550 labels every non-random strategy beats random; at 400 labels the GP and bootstrap selectors beat random on all 10 seeds. Seed-to-seed spread also drops from ±2.7 K to ≤ ±0.7 K.
+- **The models rediscover the rule.** Without being told about the hard region, both model-driven selectors spend 50–70% of their labels there (random: 22%). In the hard region the heuristic matches the best model.
+- **The bootstrap XGBoost ensemble was the best selector**, slightly ahead of the GP. Uncertainty-only GP sampling first chases chemical extremes (ozone, deuterated methane, tetranitromethane), which leaves it *behind* random at 100 labels. A calibration check suggests why. The GP's uncertainty mostly measures distance from labelled compounds (Spearman ρ ≈ 0.8 with distance) and underestimates how much harder the hard region is (~2.3× vs the real ~3×). The bootstrap spread tracks where the ensemble is actually wrong (ρ ≈ 0.6 with its error by 400 labels, vs 0.5 for the GP).
+- **The hard region has a ~50 K error floor.** From ~400 labels on, hard-region RMSE stays at 50–52 K for every strategy, all the way to the full pool. With these 12 features, more of the same kind of data doesn't fix it (see Conclusions).
+
+Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 cores). `scripts/run_model_driven_nist_round.py` is the real-world counterpart: it ranks 10,776 NIST-likely PubChem candidates by selector uncertainty, with no region filter, and looks them up on NIST in rounds. That round hasn't been run yet.
+
 ## Conclusions & Future Work
 
 1. Five classic ML models were evaluated for predicting chemical compound boiling points on a dataset of 1,588 entries. Model performance was found to be sensitive to the train/validation/test split, given the modest dataset size — collecting more data is recommended as a follow-up. Since no single architecture was reliably better than the others, a simple-averaging ensemble of Ridge, XGBoost, and a Neural Network is used instead of a single champion model.
 2. Feature selection is naturally embedded in the training process of the XGBoost component of the ensemble; the dominant features are molecular weight, oxygen atom count, H-bond donor count, polar area, side-chain count, and rotatable bond count.
 3. To further improve model performance, collecting more data — particularly compounds with large polar area and/or rotatable bond counts — is recommended for re-training.
 4. Cross-referencing the recurring large-residual outlier compounds against independent sources surfaced likely data-entry errors of roughly 90–100 K in two of them, both understating boiling point: 2,6-Nonadien-1-ol (369.65 K here vs 469.15 K per PubChem's WHO/FAO JECFA citation) and N-Methyldodecylamine (382.15 K here vs 473.15 K per a commercial chemical supplier site). At least part of this dataset's hardest-to-predict cases may reflect mislabeled training data rather than genuine chemical difficulty — a full audit against primary sources is recommended alongside collecting more data.
+5. Active learning shows that choosing which compounds to label reaches the same accuracy with ~27–47% fewer labels than random picking, and that the hand-written hard-region rule captures most of that benefit. It also shows that hard-region error plateaus at ~50 K no matter how many of the existing compounds are labelled. This qualifies point 3: richer molecular descriptors and a label audit are likely to matter more than more compounds described by the same 12 features.
 
 ## License
 
