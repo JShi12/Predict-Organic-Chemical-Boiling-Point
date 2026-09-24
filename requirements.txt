@@ -13,3 +13,4 @@ nistchempy
 beautifulsoup4
 torch
 botorch
+rdkit

@@ -17,6 +17,7 @@ Predicting the boiling point of organic chemical compounds from their molecular 
 - [Results](#results)
 - [Feature Importance](#feature-importance)
 - [Active Learning: Which Compounds to Measure Next](#active-learning-which-compounds-to-measure-next)
+- [Rich Features and Nested Cross-Validation](#rich-features-and-nested-cross-validation)
 - [Conclusions & Future Work](#conclusions--future-work)
 - [License](#license)
 
@@ -32,6 +33,7 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 .
 ├── Boiling_Point_Predicter.ipynb   # main analysis notebook (narrative + EDA)
 ├── Active_Learning.ipynb           # which compounds to measure next: GP-driven active learning
+├── Boiling_Point_RDKit.ipynb       # fresh start: curated RDKit descriptors, nested family-stratified CV
 ├── src/boiling_point/              # reusable pipeline code
 │   ├── data.py                     # loading & merging datasets
 │   ├── features.py                 # SMILES feature engineering, feature/target selection
@@ -41,13 +43,17 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 │   ├── ensemble.py                 # simple-averaging ensemble across model families
 │   ├── viz.py                      # shared plotting functions
 │   ├── active_learning.py          # GP / bootstrap selectors, simulated labelling campaigns
+│   ├── descriptors.py              # curated RDKit descriptors grouped by intermolecular force
+│   ├── families.py                 # primary chemical family from RDKit substructure patterns
+│   ├── validation.py               # nested, family-stratified CV of modelling recipes
 │   └── nist_scraper.py             # NIST WebBook scraper for extending the dataset
 ├── scripts/
 │   ├── scrape_nist_boiling_points.py       # CLI entry point for the NIST scraper (heuristic rule)
 │   ├── run_active_learning_simulation.py   # retrospective active-learning benchmark
 │   ├── run_model_driven_nist_round.py      # real NIST rounds with model-chosen compounds
 │   ├── replay_nist_lookups.py              # replay the heuristic run's lookups in other orders
-│   └── evaluate_nist_additions.py          # do the added compounds improve the ensemble?
+│   ├── evaluate_nist_additions.py          # do the added compounds improve the ensemble?
+│   └── run_feature_study.py                # nested CV: old 12 vs curated RDKit features
 ├── tests/                          # unit tests for src/boiling_point
 ├── results/                       # simulation results (CSV) and exported plots (images/)
 ├── compound_boiling_points_from_literature.xlsx
@@ -197,6 +203,21 @@ Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 
 
 - **The model found the dataset's blind spot: halogenated compounds.** 69% of its 105 are halogenated, against 0 of the 1,588 literature compounds, and the 12 features have no halogen counts. Neither set of additions measurably changes the literature test RMSE (all 95% intervals include zero; `scripts/evaluate_nist_additions.py`), because that test set has no halogenated compounds. On held-out model-chosen compounds, though, adding the other half cuts the error from ~82 K to ~23 K (6/6 splits) without hurting the literature benchmark.
 
+## Rich Features and Nested Cross-Validation
+
+[`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) redoes the modelling from scratch with two changes: curated RDKit descriptors, grouped by the intermolecular force each one tracks (size, branching/shape, hydrogen bonding, unsaturation, composition), and **nested cross-validation stratified by chemical family** (5 folds × 3 repeats, hyperparameters tuned inside each training fold). It uses the 1,588 literature compounds minus the two likely data-entry errors.
+
+| Ensemble (Ridge + XGBoost + MLP), 15 outer folds | RMSE (K) | MAE (K) |
+|---|---|---|
+| Original 12 features | 32.0 ± 2.6 | 17.3 |
+| Curated RDKit descriptors | 34.4 ± 3.8 | 17.5 |
+
+- **The honest accuracy estimate is ~32 ± 3 K RMSE.** It sits between the original single-split test (26 K, an easy test set) and its CV (36 K). The final model (original 12 features + MLP, effectively tied with the ensemble) is tuned and fitted on all compounds.
+- **The curated descriptors don't beat the original features on this data.** On 99% of compounds they're identical (28.1 K RMSE each), and closer on 57%. The whole RMSE gap comes from ~20 giant molecules (e.g. a C₅₀ alkane listed at 1,343 K) whose listed boiling points are probably extrapolated estimates. Ridge is the exception: it improves consistently with curated features (12/15 folds by RMSE, 15/15 by MAE).
+- **The dataset is narrow.** It has only four acyclic families of C/H/N/O compounds (alcohols, alkanes, alkenes/alkynes, amines), with no rings, aromatics, carbonyls or halogens. So many chemically motivated descriptors are constant, and the original features already capture what matters most here.
+- **One global model beats per-family models** for 3 of 4 families, and adding the family as an input doesn't help.
+- **The richer features resolve most isomer ties:** from 224 groups sharing identical features down to 71, of which 64 are stereoisomers.
+
 ## Conclusions & Future Work
 
 1. Five classic ML models were evaluated for predicting chemical compound boiling points on a dataset of 1,588 entries. Model performance was found to be sensitive to the train/validation/test split, given the modest dataset size — collecting more data is recommended as a follow-up. Since no single architecture was reliably better than the others, a simple-averaging ensemble of Ridge, XGBoost, and a Neural Network is used instead of a single champion model.
@@ -205,6 +226,7 @@ Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 
 4. Cross-referencing the recurring large-residual outlier compounds against independent sources surfaced likely data-entry errors of roughly 90–100 K in two of them, both understating boiling point: 2,6-Nonadien-1-ol (369.65 K here vs 469.15 K per PubChem's WHO/FAO JECFA citation) and N-Methyldodecylamine (382.15 K here vs 473.15 K per a commercial chemical supplier site). At least part of this dataset's hardest-to-predict cases may reflect mislabeled training data rather than genuine chemical difficulty — a full audit against primary sources is recommended alongside collecting more data.
 5. Active learning shows that choosing which compounds to label reaches the same accuracy with ~27–47% fewer labels than random picking, and that the hand-written hard-region rule captures most of that benefit. It also shows that hard-region error plateaus at ~50 K no matter how many of the existing compounds are labelled. This qualifies point 3: richer molecular descriptors and a label audit are likely to matter more than more compounds described by the same 12 features.
 6. Real NIST collection rounds show that active learning in the real world must model feasibility: uncertainty alone chose compounds that decompose before boiling (0.5% hit rate), while weighting by a learned chance of success found 105 new boiling points in 302 lookups (35%). The model-chosen compounds covered chemistry the literature data lacks entirely (halogenated molecules), cutting error there from ~82 K to ~23 K. A benchmark drawn from the original data can't show that kind of gain, so the acquisition target should match the population the model will be used on.
+7. Redoing the modelling with nested, family-stratified CV gives an honest ~32 ± 3 K RMSE. Curated RDKit descriptors match the original features on typical compounds but lose on ~20 extreme molecules with probably extrapolated labels. So on this narrow dataset the next gains are more likely from auditing those extreme labels, choosing models by a robust metric (MAE), and testing on broader chemistry, than from more descriptors.
 
 ## License
 
