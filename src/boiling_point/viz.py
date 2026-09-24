@@ -111,3 +111,42 @@ def plot_active_learning_curves(results: pd.DataFrame, metric: str = "rmse", ax=
     ax.legend(frameon=False)
     fig.tight_layout()
     return fig
+
+
+# NIST lookup replay: model-driven orders take categorical slots in fixed
+# order; the rule's own order is the fourth slot; random is the neutral baseline.
+LOOKUP_ORDER_STYLES = {
+    "feasibility_weighted": {"label": "Uncertainty × feasibility", "color": "#2a78d6", "linestyle": "-"},
+    "feasibility": {"label": "Feasibility only", "color": "#eb6834", "linestyle": "-"},
+    "uncertainty": {"label": "Uncertainty only", "color": "#1baf7a", "linestyle": "-"},
+    "rule_order": {"label": "Heuristic run (actual order)", "color": "#eda100", "linestyle": "-"},
+    "random": {"label": "Random order", "color": "#7a7a75", "linestyle": "--"},
+}
+
+
+def plot_lookup_replay(results: pd.DataFrame, ax=None):
+    """Cumulative NIST hits vs lookups for each ordering of the same pool,
+    mean across seeds with a ±1 std band."""
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7, 4.2))
+    else:
+        fig = ax.figure
+    summary = results.groupby(["strategy", "lookups"])["hits"].agg(["mean", "std"]).reset_index()
+    for strategy, style in LOOKUP_ORDER_STYLES.items():
+        c = summary[summary["strategy"] == strategy]
+        if c.empty:
+            continue
+        ax.plot(c["lookups"], c["mean"], color=style["color"], linestyle=style["linestyle"],
+                linewidth=2, label=style["label"])
+        ax.fill_between(c["lookups"], c["mean"] - c["std"].fillna(0), c["mean"] + c["std"].fillna(0),
+                        color=style["color"], alpha=0.12, linewidth=0)
+    ax.set_xlabel("NIST lookups")
+    ax.set_ylabel("Boiling points found")
+    ax.set_title("Same 5,400 candidates, different lookup orders")
+    ax.grid(True, color="#e4e3dd", linewidth=0.8)
+    ax.set_axisbelow(True)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    ax.legend(frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5))  # curves fill the plot area
+    fig.tight_layout()
+    return fig

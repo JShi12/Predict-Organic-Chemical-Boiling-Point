@@ -45,7 +45,9 @@ This project goes through a full ML project cycle: data collection, data pre-pro
 ├── scripts/
 │   ├── scrape_nist_boiling_points.py       # CLI entry point for the NIST scraper (heuristic rule)
 │   ├── run_active_learning_simulation.py   # retrospective active-learning benchmark
-│   └── run_model_driven_nist_round.py      # real NIST round with GP-chosen compounds
+│   ├── run_model_driven_nist_round.py      # real NIST rounds with model-chosen compounds
+│   ├── replay_nist_lookups.py              # replay the heuristic run's lookups in other orders
+│   └── evaluate_nist_additions.py          # do the added compounds improve the ensemble?
 ├── tests/                          # unit tests for src/boiling_point
 ├── results/                       # simulation results (CSV) and exported plots (images/)
 ├── compound_boiling_points_from_literature.xlsx
@@ -172,7 +174,28 @@ Strategies: **random**, the **heuristic rule**, **GP uncertainty** (BoTorch `Sin
 - **The bootstrap XGBoost ensemble was the best selector**, slightly ahead of the GP. Uncertainty-only GP sampling first chases chemical extremes (ozone, deuterated methane, tetranitromethane), which leaves it *behind* random at 100 labels. A calibration check suggests why. The GP's uncertainty mostly measures distance from labelled compounds (Spearman ρ ≈ 0.8 with distance) and underestimates how much harder the hard region is (~2.3× vs the real ~3×). The bootstrap spread tracks where the ensemble is actually wrong (ρ ≈ 0.6 with its error by 400 labels, vs 0.5 for the GP).
 - **The hard region has a ~50 K error floor.** From ~400 labels on, hard-region RMSE stays at 50–52 K for every strategy, all the way to the full pool. With these 12 features, more of the same kind of data doesn't fix it (see Conclusions).
 
-Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 cores). `scripts/run_model_driven_nist_round.py` is the real-world counterpart: it ranks 10,776 NIST-likely PubChem candidates by selector uncertainty, with no region filter, and looks them up on NIST in rounds. That round hasn't been run yet.
+Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 cores).
+
+### Real NIST rounds: model-chosen compounds
+
+`scripts/run_model_driven_nist_round.py` repeats the NIST collection with a model choosing what to look up. It draws from 10,776 PubChem candidates with no region filter and stops at 105 found boiling points, to match the heuristic run.
+
+| Run | Lookups | Found | Hit rate | Lookups to reach 105 |
+|---|---|---|---|---|
+| Heuristic rule (earlier run) | 5,400 | 105 | 1.9% | 3,553 |
+| Uncertainty only | 811 | 4 | 0.5% | not reached (stopped) |
+| **Uncertainty × predicted feasibility** | 311 | 108 | **34.7%** | **302** |
+
+- **Uncertainty alone picks compounds that can't be measured.** Its picks were large drug- and dye-like molecules (median molecular weight ~478 vs ~222 for the pool) that decompose before boiling, so NIST has no value.
+- **Weighting by predicted feasibility fixes that.** The chance a lookup succeeds is very predictable from the same features (XGBoost classifier, cross-validated AUC 0.93). Weighting uncertainty by it found 105 new boiling points in 302 lookups, **~12× fewer** than the heuristic run needed.
+- **Replay of the heuristic run's 5,400 recorded lookups** (no NIST requests; `scripts/replay_nist_lookups.py`):
+  - ordering by feasibility alone reaches 50 hits in ~520 lookups, against ~2,610 in random order;
+  - the heuristic run's own order did well (~800) because it followed PubChem compound ID order, and low IDs are common, well-studied compounds;
+  - uncertainty × feasibility falls into a cold-start trap when its classifier starts with almost no hits.
+
+![NIST lookup replay](results/images/nist_lookup_replay.png)
+
+- **The model found the dataset's blind spot: halogenated compounds.** 69% of its 105 are halogenated, against 0 of the 1,588 literature compounds, and the 12 features have no halogen counts. Neither set of additions measurably changes the literature test RMSE (all 95% intervals include zero; `scripts/evaluate_nist_additions.py`), because that test set has no halogenated compounds. On held-out model-chosen compounds, though, adding the other half cuts the error from ~82 K to ~23 K (6/6 splits) without hurting the literature benchmark.
 
 ## Conclusions & Future Work
 
@@ -181,6 +204,7 @@ Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 
 3. To further improve model performance, collecting more data — particularly compounds with large polar area and/or rotatable bond counts — is recommended for re-training.
 4. Cross-referencing the recurring large-residual outlier compounds against independent sources surfaced likely data-entry errors of roughly 90–100 K in two of them, both understating boiling point: 2,6-Nonadien-1-ol (369.65 K here vs 469.15 K per PubChem's WHO/FAO JECFA citation) and N-Methyldodecylamine (382.15 K here vs 473.15 K per a commercial chemical supplier site). At least part of this dataset's hardest-to-predict cases may reflect mislabeled training data rather than genuine chemical difficulty — a full audit against primary sources is recommended alongside collecting more data.
 5. Active learning shows that choosing which compounds to label reaches the same accuracy with ~27–47% fewer labels than random picking, and that the hand-written hard-region rule captures most of that benefit. It also shows that hard-region error plateaus at ~50 K no matter how many of the existing compounds are labelled. This qualifies point 3: richer molecular descriptors and a label audit are likely to matter more than more compounds described by the same 12 features.
+6. Real NIST collection rounds show that active learning in the real world must model feasibility: uncertainty alone chose compounds that decompose before boiling (0.5% hit rate), while weighting by a learned chance of success found 105 new boiling points in 302 lookups (35%). The model-chosen compounds covered chemistry the literature data lacks entirely (halogenated molecules), cutting error there from ~82 K to ~23 K. A benchmark drawn from the original data can't show that kind of gain, so the acquisition target should match the population the model will be used on.
 
 ## License
 

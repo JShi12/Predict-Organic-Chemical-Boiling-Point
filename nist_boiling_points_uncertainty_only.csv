@@ -1,0 +1,812 @@
+cmpdname,nist_id,boiling_point_kelvin,n_measurements,status,round,rank_in_round,source
+Linusic acid,,,0,not_found,0,0,cache
+Egtazic Acid,,,0,not_found,0,1,cache
+Aminopentol,,,0,not_found,0,2,cache
+Limocitrol,,,0,not_found,0,3,cache
+Odobromoamide,,,0,not_found,0,4,cache
+Rescinnamine,C24815245,,0,no_boiling_point,0,5,cache
+Nostovalerolactone,,,0,not_found,0,6,cache
+Loganic Acid,,,0,not_found,0,7,cache
+Canditral,,,0,not_found,0,8,cache
+Orungal,,,0,not_found,0,9,cache
+Piscerythrone,,,0,not_found,0,10,cache
+Piscidone,,,0,not_found,0,11,cache
+Ketorolac Tromethamine,,,0,not_found,0,12,cache
+Circinamide,,,0,not_found,0,13,cache
+Uralene,,,0,not_found,0,14,cache
+Cortolonic acid,,,0,not_found,0,15,cache
+beta-Cortolonic acid,,,0,not_found,0,16,cache
+Perfluorotripentylamine,C338841,,0,no_boiling_point,0,17,scraped
+Perfluorotrihexylamine,C432086,,0,no_boiling_point,0,18,cache
+Geniposidic Acid,,,0,not_found,0,19,cache
+Arteanoflavone,,,0,not_found,0,20,cache
+8-Methoxycirsilineol,,,0,not_found,0,21,cache
+Araneosol,,,0,not_found,0,22,cache
+s-Hexylglutathione,,,0,not_found,0,23,cache
+Stenosporic acid,,,0,not_found,0,24,cache
+6beta-Hydroxycortisol,,,0,not_found,0,25,cache
+Mantillamide,,,0,not_found,0,26,cache
+Clethodim Sulfone,,,0,not_found,0,27,cache
+Clethodim-sulfone,,,0,not_found,0,28,cache
+Diaziquone,,,0,not_found,0,29,cache
+Celiprolol,,,0,not_found,0,30,cache
+Cryptomaldamide,,,0,not_found,0,31,cache
+Mutanamide,,,0,not_found,0,32,cache
+Perfluorotributylamine,C311897,451.95,3,found,0,33,scraped
+7-Diacetyllycopsamine,R227895,,0,no_boiling_point,0,34,cache
+Perfluidone,C37924133,,0,no_boiling_point,0,35,cache
+Piscidanone,,,0,not_found,0,36,cache
+Co-Artemether,,,0,not_found,0,37,cache
+Brisoral,,,0,not_found,0,38,cache
+Bicalutamide,C90357065,,0,no_boiling_point,0,39,cache
+Dronedarone,,,0,not_found,0,40,cache
+Flubendiamide,,,0,not_found,0,41,cache
+Tembotrione,,,0,not_found,0,42,cache
+Melafolone,,,0,not_found,0,43,cache
+Valafolone,,,0,not_found,0,44,cache
+Pamoic acid,,,0,not_found,0,45,cache
+Arotinolol,,,0,not_found,0,46,cache
+Cyprosulfamide,,,0,not_found,0,47,cache
+Buckminsterfullerene,C99685968,,0,no_boiling_point,0,48,scraped
+Finerenone,Finerenone,,0,no_boiling_point,0,49,cache
+Reproterol,,,0,not_found,0,50,cache
+Enzalutamide,,,0,not_found,0,51,cache
+Acotiamide,,,0,not_found,0,52,cache
+Oxycodegol,,,0,not_found,0,53,cache
+Morusinol,,,0,not_found,0,54,cache
+Pitiprolamide,,,0,not_found,0,55,cache
+Triproamide,,,0,not_found,0,56,cache
+N-Desmethylzopiclone,R178491,,0,no_boiling_point,0,57,cache
+Cortolic acid,,,0,not_found,0,58,cache
+Odoamide,,,0,not_found,0,59,cache
+Petalopurpurenol,,,0,not_found,0,60,cache
+Sideritoflavone,,,0,not_found,0,61,cache
+Tamadone,,,0,not_found,0,62,cache
+Evernic Acid,,,0,not_found,0,63,cache
+Visudyne,,,0,not_found,0,64,cache
+Sophoronol,,,0,not_found,0,65,cache
+Quinosol,,,0,not_found,0,66,cache
+Gadodiamide,,,0,not_found,0,67,cache
+Trichamide,,,0,not_found,0,68,cache
+Molassamide,,,0,not_found,0,69,cache
+3'-Hydroxyrocaglamide,,,0,not_found,0,70,cache
+Sarothranol,,,0,not_found,0,71,cache
+Medroxalol,,,0,not_found,0,72,cache
+Perfluorotriheptyl amine,,,0,not_found,0,73,cache
+Microseiramide,,,0,not_found,0,74,cache
+7-Tigloyllacopsamine,R516531,,0,no_boiling_point,0,75,cache
+S-Lactoylglutathione,,,0,not_found,0,76,cache
+Croissamide,,,0,not_found,0,77,cache
+8-Hydroxypinoresinol,,,0,not_found,0,78,cache
+Drixoral,,,0,not_found,0,79,cache
+Sphaerocyclamide,,,0,not_found,0,80,cache
+Motobamide,,,0,not_found,0,81,cache
+Grahamine,R590297,,0,no_boiling_point,0,82,cache
+Solaniol,C36519252,,0,no_boiling_point,0,83,cache
+Neosolaniol,C36519252,,0,no_boiling_point,0,84,cache
+Bemotrizinol,,,0,not_found,0,85,cache
+Lobaric Acid,,,0,not_found,0,86,cache
+Nostopyrrolidonamide,,,0,not_found,0,87,cache
+Flubenzimine,C37893020,,0,no_boiling_point,0,88,cache
+SZX 0722-carboxylic acid,,,0,not_found,0,89,cache
+Dicresulene,,,0,not_found,0,90,cache
+Cirsiliol,,,0,not_found,0,91,cache
+Betuletol,,,0,not_found,0,92,cache
+Tamaridone,,,0,not_found,0,93,cache
+Laurentinol,,,0,not_found,0,94,cache
+Fipronil sulfone,,,0,not_found,0,95,cache
+Perfluorododecanal,,,0,not_found,0,96,scraped
+Lingaoamide,,,0,not_found,0,97,cache
+Aliarin 4'-methyl ether,,,0,not_found,0,98,cache
+Atrovirinone,,,0,not_found,0,99,cache
+Pentetic Acid,C67436,,0,no_boiling_point,1,0,cache
+Sulfoxone,,,0,not_found,1,1,cache
+Metrizamide,,,0,not_found,1,2,cache
+Diquafosol,,,0,not_found,1,3,cache
+Mefluidide-diolamine,,,0,not_found,1,4,cache
+Iomeprol,,,0,not_found,1,5,cache
+Iopamidol,,,0,not_found,1,6,cache
+Ioversol,,,0,not_found,1,7,cache
+Perfluorotetradecane,C307620,,0,no_boiling_point,1,8,scraped
+Perfluorodecyl ethylene,,,0,not_found,1,9,scraped
+Propoxycarbazone,,,0,not_found,1,10,cache
+Iohexol,,,0,not_found,1,11,cache
+Gadopentetic acid,,,0,not_found,1,12,cache
+Perfluorododecane,C307595,,0,no_boiling_point,1,13,scraped
+Perfluoropentadecane,,,0,not_found,1,14,scraped
+Ioxaglic acid,,,0,not_found,1,15,cache
+Perfluoroundecane,,,0,not_found,1,16,scraped
+Dihydrofolic acid,,,0,not_found,1,17,cache
+Folic Acid,C59303,,0,no_boiling_point,1,18,cache
+Tetrahydrofolic acid,,,0,not_found,1,19,cache
+Colazal,,,0,not_found,1,20,cache
+Syringin methyl ether,,,0,not_found,1,21,cache
+Hydroxystilbamide,,,0,not_found,1,22,cache
+Perfluorohexadecane,C355497,,0,no_boiling_point,1,23,scraped
+Levomefolic acid,,,0,not_found,1,24,cache
+Adenylsuccinic acid,,,0,not_found,1,25,cache
+Adenylosuccinic acid,,,0,not_found,1,26,cache
+3'-Sialyllactosamine,,,0,not_found,1,27,cache
+Ceftriaxone,,,0,not_found,1,28,cache
+Gadobutrol,,,0,not_found,1,29,cache
+Brinzolamide,,,0,not_found,1,30,cache
+Gadoteridol,,,0,not_found,1,31,cache
+Piroxantrone,,,0,not_found,1,32,cache
+Gadoteric acid,,,0,not_found,1,33,cache
+Perfluorotridecane,,,0,not_found,1,34,scraped
+1-Bromoperfluorononane,,,0,not_found,1,35,scraped
+Rurioctocog alfa pegol,,,0,not_found,1,36,cache
+Perfluoroundecanoic acid,C2058948,,0,no_boiling_point,1,37,scraped
+Fursultiamine,,,0,not_found,1,38,cache
+Dinoprost Tromethamine,,,0,not_found,1,39,cache
+Perfluorodecane,C307459,,0,no_boiling_point,1,40,scraped
+Tartrazine acid,,,0,not_found,1,41,cache
+Sulfisoxazole Diolamine,,,0,not_found,1,42,cache
+Disodium ceftriaxone,,,0,not_found,1,43,cache
+Iodipamide,,,0,not_found,1,44,cache
+Alizarin complexone,,,0,not_found,1,45,cache
+Hfpo pentamer acid,,,0,not_found,1,46,cache
+CDP-Ethanolamine,,,0,not_found,1,47,cache
+Ceftolozane,,,0,not_found,1,48,cache
+Perfluorotridecanoic acid,,,0,not_found,1,49,scraped
+Cefoperazone,,,0,not_found,1,50,cache
+Pyritinol,,,0,not_found,1,51,cache
+Fefol,,,0,not_found,1,52,cache
+Opicapone,,,0,not_found,1,53,cache
+Deferoxamine,C70519,,0,no_boiling_point,1,54,cache
+CDP-glycerol,,,0,not_found,1,55,cache
+Heptabromodiphenyl ether,,,0,not_found,1,56,scraped
+Octabromodiphenyl ether,,,0,not_found,1,57,scraped
+Perfluoroperhydrofluorene,,,0,not_found,1,58,scraped
+Thiencarbazone,,,0,not_found,1,59,cache
+Gadopentetic-acid,,,0,not_found,1,60,cache
+Cefpiramide,,,0,not_found,1,61,cache
+Lodoxamide Tromethamine,,,0,not_found,1,62,cache
+Perfluorododecanoic acid,C307551,,0,no_boiling_point,1,63,scraped
+Oxiglutatione,,,0,not_found,1,64,cache
+Nonabromodiphenyl ether,,,0,not_found,1,65,scraped
+Trigallic Acid,,,0,not_found,1,66,cache
+Gadoversetamide,,,0,not_found,1,67,cache
+Anziaic acid,,,0,not_found,1,68,cache
+Octonal,,,0,not_found,1,69,cache
+Gyrophoric acid,,,0,not_found,1,70,cache
+Deoxyribonucleic acid,,,0,not_found,1,71,cache
+Amsonic acid,,,0,not_found,1,72,cache
+6-Sialyllactosamine,,,0,not_found,1,73,cache
+Topilutamide,,,0,not_found,1,74,cache
+Agaricic Acid,,,0,not_found,1,75,cache
+Fumarprotocetraric Acid,,,0,not_found,1,76,cache
+Gentacycol,,,0,not_found,1,77,cache
+Fipronil amide,,,0,not_found,1,78,cache
+Carboprost Tromethamine,,,0,not_found,1,79,cache
+Perfluoroeicosane,C37589574,,0,no_boiling_point,1,80,cache
+Repenol,,,0,not_found,1,81,cache
+Phloraspidinol,,,0,not_found,1,82,cache
+Chicoric acid,,,0,not_found,1,83,cache
+D-Chicoric acid,,,0,not_found,1,84,cache
+Nostocyclamide,,,0,not_found,1,85,cache
+Vocol,,,0,not_found,1,86,cache
+Acetylgynuramine,R178095,,0,no_boiling_point,1,87,cache
+Gadobenic Acid,,,0,not_found,1,88,cache
+Azoxystrobin acid,,,0,not_found,1,89,cache
+Fertaric acid,Fertaric acid,,0,no_boiling_point,1,90,cache
+Dithane,,,0,not_found,1,91,cache
+Wainunuamide,,,0,not_found,1,92,cache
+Deganol,,,0,not_found,1,93,cache
+Tenofovir Alafenamide,,,0,not_found,1,94,cache
+Kappadione,,,0,not_found,1,95,cache
+Silicomolybdic acid,,,0,not_found,1,96,cache
+Hapalocyclamide,,,0,not_found,1,97,cache
+Suxibuzone,C27470515,,0,no_boiling_point,1,98,cache
+Tyrosylglutamic acid,,,0,not_found,1,99,cache
+Desferal,,,0,not_found,2,0,cache
+Phytic acid,,,0,not_found,2,1,cache
+Phosphomolybdic acid,,,0,not_found,2,2,cache
+Silicotungstic acid,,,0,not_found,2,3,cache
+Tauroselcholic Acid,,,0,not_found,2,4,cache
+Mirificoumestan glycol,,,0,not_found,2,5,cache
+Naringin Dihydrochalcone,,,0,not_found,2,6,cache
+Dapagliflozin Propanediol,,,0,not_found,2,7,cache
+Ferrioxamine,,,0,not_found,2,8,cache
+Perfluamine,C338830,,0,no_boiling_point,2,9,scraped
+7-Sulfocholic acid,,,0,not_found,2,10,cache
+Guamamide,,,0,not_found,2,11,cache
+Octapropylene glycol,,,0,not_found,2,12,cache
+Taurocholic acid,,,0,not_found,2,13,cache
+Tauromuricholic acid,,,0,not_found,2,14,cache
+Taurohyocholic acid,,,0,not_found,2,15,cache
+Taurallocholic acid,,,0,not_found,2,16,cache
+Tauroursocholic acid,,,0,not_found,2,17,cache
+Anazolene,,,0,not_found,2,18,cache
+Luprostiol,,,0,not_found,2,19,cache
+Lignosulfonic acid,,,0,not_found,2,20,cache
+Fluocinolone,,,0,not_found,2,21,cache
+Amlaic acid,,,0,not_found,2,22,cache
+Artobiloxanthone,,,0,not_found,2,23,cache
+Armillane,,,0,not_found,2,24,cache
+Atractylic Acid,,,0,not_found,2,25,cache
+Triamcinolone,C124947,,0,no_boiling_point,2,26,cache
+Aervanone,,,0,not_found,2,27,cache
+Aurintricarboxylic acid,,,0,not_found,2,28,cache
+Irisxanthone,,,0,not_found,2,29,cache
+Pravachol,,,0,not_found,2,30,cache
+Dalbinol,,,0,not_found,2,31,cache
+Dabinol,,,0,not_found,2,32,cache
+1H-Perfluorodecane,C375973,,0,no_boiling_point,2,33,scraped
+Melledonal,,,0,not_found,2,34,cache
+Ioforminol,,,0,not_found,2,35,cache
+Ruberythric acid,,,0,not_found,2,36,cache
+Caperatic acid,,,0,not_found,2,37,cache
+Kuraridinol,,,0,not_found,2,38,cache
+Querciturone,,,0,not_found,2,39,cache
+Epsilon-pyrromycinone,,,0,not_found,2,40,cache
+Fostemsavir Tromethamine,,,0,not_found,2,41,cache
+Mitoxantrone,,,0,not_found,2,42,cache
+Gingko lactone,,,0,not_found,2,43,cache
+Semimyrtucommulone,,,0,not_found,2,44,cache
+Cefiderocol,,,0,not_found,2,45,cache
+Gadopiclenol,,,0,not_found,2,46,cache
+Acid Violet 7 free acid,,,0,not_found,2,47,cache
+Intal,,,0,not_found,2,48,cache
+Taurodehydrocholic acid,,,0,not_found,2,49,cache
+Perfluorodecanal,,,0,not_found,2,50,scraped
+3-Deoxyryanodol,,,0,not_found,2,51,cache
+Triacetoxyscirpenol,,,0,not_found,2,52,cache
+Geranioloxyalatum flavone,,,0,not_found,2,53,cache
+Carminic acid,,,0,not_found,2,54,cache
+Acetylandromedol,,,0,not_found,2,55,cache
+Perfluorodecene,C35328439,,0,no_boiling_point,2,56,scraped
+Cycloartobiloxanthone,,,0,not_found,2,57,cache
+Piscerythramine,,,0,not_found,2,58,cache
+Iodixanol,,,0,not_found,2,59,cache
+Preulithiacyclamide,,,0,not_found,2,60,cache
+Perfluorononane,C375962,,0,no_boiling_point,2,61,scraped
+6-Acetyldihydrostemonal,,,0,not_found,2,62,cache
+Hesperidin methylchalcone,,,0,not_found,2,63,cache
+Artobilichromene,,,0,not_found,2,64,cache
+Acaulesterone,,,0,not_found,2,65,cache
+Octamethylsilsesquioxane,,,0,not_found,2,66,cache
+Rosmic acid,,,0,not_found,2,67,cache
+Inokosterone,,,0,not_found,2,68,cache
+Bongkrekic acid,,,0,not_found,2,69,cache
+Arthonioic acid,,,0,not_found,2,70,cache
+Olive acid,,,0,not_found,2,71,cache
+Ulithiacyclamide,,,0,not_found,2,72,cache
+8-Hydroxycarapinic acid,,,0,not_found,2,73,cache
+Fuchsine acid,Fuchsine acid,,0,no_boiling_point,2,74,cache
+Eltrombopag olamine,,,0,not_found,2,75,cache
+Solu-Medrol,,,0,not_found,2,76,cache
+Glucosyl steviol,,,0,not_found,2,77,cache
+Villol,,,0,not_found,2,78,cache
+Methoxyperfluorobutane,,,0,not_found,2,79,scraped
+Pemetrexed ditromethamine,,,0,not_found,2,80,cache
+Nonadecafluorodecanamide,,,0,not_found,2,81,cache
+21-Hydroxyeplerenone,,,0,not_found,2,82,cache
+Urushiol,,,0,not_found,2,83,cache
+Niceritrol,,,0,not_found,2,84,cache
+Pterosterone,,,0,not_found,2,85,cache
+20-Hydroxyecdysone,,,0,not_found,2,86,cache
+Zoanthusterone,,,0,not_found,2,87,cache
+Uniflorsterone,,,0,not_found,2,88,cache
+Gadoxetic acid,,,0,not_found,2,89,cache
+1H-Perfluorononane,R24467,,0,no_boiling_point,2,90,scraped
+Artomunoxanthone,,,0,not_found,2,91,cache
+Lysophosphatidic acid,,,0,not_found,2,92,cache
+Perfluorotetracosane,C1766412,,0,no_boiling_point,2,93,cache
+6-Deoxyclitoracetal,,,0,not_found,2,94,cache
+Dihydrostemonal,,,0,not_found,2,95,cache
+Perfluorodecanoic acid,C335762,,0,no_boiling_point,2,96,scraped
+Narceinone,,,0,not_found,2,97,cache
+Cobinamide,,,0,not_found,2,98,cache
+Margaritene,,,0,not_found,2,99,cache
+Perfluoroeicosanoic acid,,,0,not_found,3,0,cache
+Perfluorodocosanoic acid,,,0,not_found,3,1,cache
+Perfluorosebacic acid,,,0,not_found,3,2,cache
+1-Perfluorooctyl octane,,,0,not_found,3,3,scraped
+Eicosamethylnonasiloxane,C2652133,,0,no_boiling_point,3,4,cache
+Docosamethyldecasiloxane,,,0,not_found,3,5,cache
+2H-Perfluorononanoic acid,,,0,not_found,3,6,scraped
+Penfluridol,C26864562,,0,no_boiling_point,3,7,scraped
+Perfluorononanoic acid,,,0,not_found,3,8,scraped
+Iodol,,,0,not_found,3,9,scraped
+Tyropanic acid,,,0,not_found,3,10,cache
+N-Oleoyl glutamine,,,0,not_found,3,11,cache
+Diatrizoic Acid,,,0,not_found,3,12,cache
+Perfluorooctanamide,,,0,not_found,3,13,cache
+Iocetamic Acid,,,0,not_found,3,14,cache
+N-stearoyl glutamine,,,0,not_found,3,15,cache
+Phytoene,,,0,not_found,3,16,cache
+Oleoyl glutamic acid,,,0,not_found,3,17,cache
+Perfluoroazelaic acid,,,0,not_found,3,18,cache
+Stearoyl glutamic acid,,,0,not_found,3,19,cache
+Falecalcitriol,,,0,not_found,3,20,cache
+vitamin E-tpgs amine,,,0,not_found,3,21,cache
+Metrizoic acid,,,0,not_found,3,22,cache
+Sexithiophene,B8024752,,0,no_boiling_point,3,23,cache
+Fulvestrant sulfone,,,0,not_found,3,24,cache
+Thifluzamide,C130000407,,0,no_boiling_point,3,25,cache
+Voacamine,,,0,not_found,3,26,cache
+Lubiprostone,,,0,not_found,3,27,cache
+1-Bromoperfluoroheptane,C375882,,0,no_boiling_point,3,28,scraped
+Iopanoic Acid,C96833,,0,no_boiling_point,3,29,cache
+8H-Perfluorooctanoic acid,,,0,not_found,3,30,scraped
+6beta-Hydroxycortisone,,,0,not_found,3,31,cache
+Perfluorotriethylcarbinol,,,0,not_found,3,32,scraped
+Nonaethylene glycol,C3386183,,0,no_boiling_point,3,33,cache
+Prolycopene,,,0,not_found,3,34,cache
+Villosone,,,0,not_found,3,35,cache
+Hexabromobenzene,C87821,,0,no_boiling_point,3,36,scraped
+Phytofluene,,,0,not_found,3,37,cache
+Nonapropylene glycol,,,0,not_found,3,38,cache
+6-Hydroxysumatrol,,,0,not_found,3,39,cache
+Villosinol,,,0,not_found,3,40,cache
+Dodecafluorosuberic acid,,,0,not_found,3,41,cache
+N-palmitoleyl glutamine,,,0,not_found,3,42,cache
+Neurosporene,,,0,not_found,3,43,cache
+zeta-Carotene,,,0,not_found,3,44,cache
+Perfluorooctanoic acid,C335671,,0,no_boiling_point,3,45,scraped
+Atrovirisidone,,,0,not_found,3,46,cache
+Omaveloxolone,,,0,not_found,3,47,cache
+Heptapropylene glycol,,,0,not_found,3,48,cache
+Acetrizoic acid,C85369,,0,no_boiling_point,3,49,cache
+Carfentrazone,,,0,not_found,3,50,cache
+Esaxerenone,,,0,not_found,3,51,cache
+Zopiclone,C43200802,,0,no_boiling_point,3,52,cache
+Eszopiclone,,,0,not_found,3,53,cache
+Lycopersene,,,0,not_found,3,54,cache
+Ioxitalamic Acid,,,0,not_found,3,55,cache
+Halometasone,,,0,not_found,3,56,cache
+Halopredone,,,0,not_found,3,57,cache
+Ferric Maltol,,,0,not_found,3,58,cache
+N-palmitoyl glutamine,,,0,not_found,3,59,cache
+Rocaglamide,,,0,not_found,3,60,cache
+Cobiprostone,,,0,not_found,3,61,cache
+Sulfolithocholic acid,,,0,not_found,3,62,cache
+Carindone,,,0,not_found,3,63,cache
+Metaflumizone,,,0,not_found,3,64,cache
+Lepidissipyrone,,,0,not_found,3,65,cache
+Thysanone,,,0,not_found,3,66,cache
+Jensenone,R301785,,0,no_boiling_point,3,67,cache
+Caldoramide,,,0,not_found,3,68,cache
+Tiratricol,,,0,not_found,3,69,cache
+Palmitoyl glutamic acid,,,0,not_found,3,70,cache
+Glutamic acid linoleamide,,,0,not_found,3,71,cache
+Dihydrocitrinone,,,0,not_found,3,72,cache
+Beta-Carotene,C7235407,,0,no_boiling_point,3,73,scraped
+alpha-Carotene,,,0,not_found,3,74,scraped
+Sulfentrazone,,,0,not_found,3,75,cache
+1H-Perfluorooctane,C335659,,0,no_boiling_point,3,76,scraped
+Pubescenol,,,0,not_found,3,77,cache
+Hellebrigenol,,,0,not_found,3,78,cache
+Flusulfamide,,,0,not_found,3,79,cache
+Perulactone,,,0,not_found,3,80,cache
+Carbophenothion sulfone,C16662854,,0,no_boiling_point,3,81,cache
+Dioleoylphosphatidic acid,,,0,not_found,3,82,cache
+Flumethasone,,,0,not_found,3,83,cache
+Diflorasone,,,0,not_found,3,84,cache
+Prednylidene,,,0,not_found,3,85,cache
+18-Oxocortisol,,,0,not_found,3,86,cache
+N-arachidonoyl glutamine,,,0,not_found,3,87,cache
+11-Keto Fusidic Acid,,,0,not_found,3,88,cache
+3-Keto Fusidic Acid,,,0,not_found,3,89,cache
+Perfluorooctane,C307346,379.0,2,found,3,90,scraped
+Beta-Zeacarotene,,,0,not_found,3,91,cache
+alpha-Zeacarotene,,,0,not_found,3,92,cache
+3'-Hydroxythiopental,,,0,not_found,3,93,cache
+gamma-Carotene,,,0,not_found,3,94,scraped
+Meprednisone,,,0,not_found,3,95,cache
+Fludrocortisone,,,0,not_found,3,96,cache
+Fluprednisolone,,,0,not_found,3,97,cache
+Isoflupredone,,,0,not_found,3,98,cache
+Cajaisoflavone,,,0,not_found,3,99,cache
+Stromectol,,,0,not_found,4,0,cache
+Tetrahydrogambogic Acid,,,0,not_found,4,1,cache
+Decahydrogambogic acid,,,0,not_found,4,2,cache
+Garcinolic acid,,,0,not_found,4,3,cache
+Okadaic Acid,,,0,not_found,4,4,cache
+Kurahyne,,,0,not_found,4,5,cache
+Cambogic acid,,,0,not_found,4,6,cache
+Gambogic Acid,,,0,not_found,4,7,cache
+S-Nitrosoglutathione,,,0,not_found,4,8,cache
+S-Formylglutathione,,,0,not_found,4,9,cache
+Bisebromoamide,,,0,not_found,4,10,cache
+Norbisebromoamide,,,0,not_found,4,11,cache
+Edetic Acid,C60004,,0,no_boiling_point,4,12,cache
+Catalpol,,,0,not_found,4,13,cache
+gamma-Glutamylglutamine,,,0,not_found,4,14,cache
+Glutamylglutamine,,,0,not_found,4,15,cache
+Mabuniamide,,,0,not_found,4,16,cache
+Lysylglutamic acid,,,0,not_found,4,17,cache
+Methyl blue free acid,,,0,not_found,4,18,cache
+Rosmarinic acid,,,0,not_found,4,19,cache
+Aspartylglutamine,,,0,not_found,4,20,cache
+Norophthalamic acid,,,0,not_found,4,21,cache
+Aspartylglutamic acid,,,0,not_found,4,22,cache
+Ibandronic Acid,,,0,not_found,4,23,cache
+Azaspiracid,,,0,not_found,4,24,cache
+Madecassol,,,0,not_found,4,25,cache
+Phosphopantothenic acid,,,0,not_found,4,26,cache
+Carriebowmide Sulfone,,,0,not_found,4,27,cache
+S-Methylglutathione,,,0,not_found,4,28,cache
+Amitenone,,,0,not_found,4,29,cache
+Domoic Acid,,,0,not_found,4,30,cache
+Chukrasin methyl ether,,,0,not_found,4,31,cache
+Combretol,,,0,not_found,4,32,cache
+Lactobionic acid,,,0,not_found,4,33,cache
+Alogliptin/pioglitazone,,,0,not_found,4,34,cache
+Caftaric Acid,,,0,not_found,4,35,cache
+Implexaflavone,,,0,not_found,4,36,cache
+Ethylhexyl triazone,,,0,not_found,4,37,cache
+N-Acetyllactosamine,,,0,not_found,4,38,cache
+Ophthalmic acid,,,0,not_found,4,39,cache
+Deoxykasumigamide,,,0,not_found,4,40,cache
+Spaglumic acid,,,0,not_found,4,41,cache
+Kyanamide,,,0,not_found,4,42,cache
+L-Argininosuccinic acid,,,0,not_found,4,43,cache
+Kurzichalcolactone,,,0,not_found,4,44,cache
+7-Acetyllycopsamine,R227815,,0,no_boiling_point,4,45,cache
+Tasiamide,,,0,not_found,4,46,cache
+Squalamine,,,0,not_found,4,47,cache
+Iscotrizinol,,,0,not_found,4,48,cache
+Pembamide,,,0,not_found,4,49,cache
+Uvarinol,,,0,not_found,4,50,cache
+Isouvarinol,,,0,not_found,4,51,cache
+3'-Methoxyfukiic acid,,,0,not_found,4,52,cache
+S-Neoral,,,0,not_found,4,53,cache
+Anaenoic acid,,,0,not_found,4,54,cache
+8-Prenyllepidissipyrone,,,0,not_found,4,55,cache
+N-Acetyldjenkolic acid,,,0,not_found,4,56,cache
+5-Caffeoylshikimic acid,,,0,not_found,4,57,cache
+Neodactylifric acid,,,0,not_found,4,58,cache
+Acaciabiuronic acid,,,0,not_found,4,59,cache
+Carbenoxolone,,,0,not_found,4,60,cache
+Maedamide,,,0,not_found,4,61,cache
+Kasumigamide,,,0,not_found,4,62,cache
+6-Phosphogluconic acid,,,0,not_found,4,63,cache
+Derrichalcone,,,0,not_found,4,64,cache
+Chlorogenic Acid,,,0,not_found,4,65,cache
+Neochlorogenic acid,,,0,not_found,4,66,cache
+5Z-Caffeoylquinic acid,,,0,not_found,4,67,cache
+Squamone,,,0,not_found,4,68,cache
+Petasiphenone,,,0,not_found,4,69,cache
+Pyroxasulfone,,,0,not_found,4,70,cache
+Helvolic acid,,,0,not_found,4,71,cache
+Polycaprolactone Triol,,,0,not_found,4,72,cache
+Volubinol,,,0,not_found,4,73,cache
+Neolinderachalcone,,,0,not_found,4,74,cache
+Mycosporine glutaminol,,,0,not_found,4,75,cache
+Blighinone,,,0,not_found,4,76,cache
+Oracefal,,,0,not_found,4,77,cache
+Amantamide,,,0,not_found,4,78,cache
+Lemmasterone,,,0,not_found,4,79,cache
+Sorbityl Furfural,,,0,not_found,4,80,cache
+Autumnalamide,,,0,not_found,4,81,cache
+Lecanoric Acid,,,0,not_found,4,82,cache
+Gigantetrocinone,,,0,not_found,4,83,cache
+3'-Methoxyrocaglamide,,,0,not_found,4,84,cache
+Aglycone,,,0,not_found,4,85,cache
+Desmethylrocaglamide,,,0,not_found,4,86,cache
+Renieratene,,,0,not_found,4,87,scraped
+Dodecaethylene glycol,U352127,,0,no_boiling_point,4,88,cache
+Nitisinone,,,0,not_found,4,89,cache
+Khayanthone,,,0,not_found,4,90,cache
+Isorenieratene,,,0,not_found,4,91,scraped
+beta-Isorenieratene,,,0,not_found,4,92,scraped
+Renieracistene,,,0,not_found,4,93,scraped
+Glucocaffeic acid,,,0,not_found,4,94,cache
+Xerocomic acid,,,0,not_found,4,95,cache
+Melarsoprol,,,0,not_found,4,96,cache
+3'-Uridylic acid,,,0,not_found,4,97,cache
+Irigenol,,,0,not_found,4,98,cache
+5'-Cytidylic acid,,,0,not_found,4,99,cache
+Lysophosphatidylglycerol,,,0,not_found,5,0,cache
+Bisphenylhexamethicone,,,0,not_found,5,1,cache
+Perfluoroadamantane,,,0,not_found,5,2,scraped
+Lipofectamine,,,0,not_found,5,3,cache
+Ikoamide,,,0,not_found,5,4,cache
+Gb5 Ceramide,,,0,not_found,5,5,cache
+Palytoxin carboxylic acid,,,0,not_found,5,6,cache
+Perfluoroheptane,C335579,355.45,6,found,5,7,scraped
+Fortical,,,0,not_found,5,8,cache
+Trasylol,,,0,not_found,5,9,cache
+Vitravene,,,0,not_found,5,10,cache
+Heptaglutamyl folic acid,,,0,not_found,5,11,cache
+Nisitrol,,,0,not_found,5,12,cache
+1-Bromoperfluorohexane,,,0,not_found,5,13,scraped
+2-Chloroperfluoroheptane,,,0,not_found,5,14,scraped
+Perfluoroethylcyclohexane,C335217,374.0,1,found,5,15,scraped
+Orotidylic acid,,,0,not_found,5,16,cache
+Octol,,,0,not_found,5,17,cache
+Perfluoro-cyclooctane,,,0,not_found,5,18,scraped
+3'-Dimethylallylkievitone,,,0,not_found,5,19,cache
+PGF2a ethanolamide,,,0,not_found,5,20,cache
+Ceruletide Diethylamine,,,0,not_found,5,21,cache
+Dipicrylamine,C131737,,0,no_boiling_point,5,22,cache
+Statrol,,,0,not_found,5,23,cache
+Perfluorohexyloctane,,,0,not_found,5,24,scraped
+Amiodarone,,,0,not_found,5,25,cache
+Ventosic acid,,,0,not_found,5,26,cache
+Undecaethylene glycol,C6809707,,0,no_boiling_point,5,27,cache
+Aspergisidone,,,0,not_found,5,28,cache
+Lesterone,,,0,not_found,5,29,cache
+Turkesterone,,,0,not_found,5,30,cache
+Diplacone,,,0,not_found,5,31,cache
+Decachloropyrene,,,0,not_found,5,32,scraped
+Apalutamide,,,0,not_found,5,33,cache
+8-Prenylluteone,,,0,not_found,5,34,cache
+Fremontone,Fremontone,,0,no_boiling_point,5,35,cache
+Decaethylene glycol,C5579668,,0,no_boiling_point,5,36,cache
+Italidipyrone,,,0,not_found,5,37,cache
+Piprotal,,,0,not_found,5,38,cache
+Isomargaritene,,,0,not_found,5,39,cache
+Trimethylsilyldulcitol,,,0,not_found,5,40,cache
+Hexatetracontanoic acid,,,0,not_found,5,41,cache
+Fluticasone,Fluticasone,,0,no_boiling_point,5,42,cache
+Licoleafol,,,0,not_found,5,43,cache
+Kievitol,,,0,not_found,5,44,cache
+Hectoramide,,,0,not_found,5,45,cache
+Manniflavanone,,,0,not_found,5,46,cache
+Flucarbazone,,,0,not_found,5,47,cache
+Neouralenol,,,0,not_found,5,48,cache
+Dihydromorelloflavone,,,0,not_found,5,49,cache
+Kolaflavanone,,,0,not_found,5,50,cache
+Cyclochampedol,,,0,not_found,5,51,cache
+Lunatone,,,0,not_found,5,52,cache
+Bromotriiodosilane,,,0,not_found,5,53,scraped
+1H-Perfluoroheptane,C27213612,,0,no_boiling_point,5,54,scraped
+Repenone,,,0,not_found,5,55,cache
+23-Hydroxyphysalolactone,,,0,not_found,5,56,cache
+Rose Bengal Lactone,,,0,not_found,5,57,cache
+Pentabromophenol,C608719,,0,no_boiling_point,5,58,scraped
+Dryopteric acid,,,0,not_found,5,59,cache
+Treprostinil Diolamine,,,0,not_found,5,60,cache
+Amentoflavone,,,0,not_found,5,61,cache
+Robustaflavone,,,0,not_found,5,62,cache
+Decachlorotetrasiloxane,,,0,not_found,5,63,scraped
+Uralenol,,,0,not_found,5,64,cache
+alpha-Phocaecholic acid,,,0,not_found,5,65,cache
+1beta-Hydroxycholic acid,,,0,not_found,5,66,cache
+Chlordecone,C143500,,0,no_boiling_point,5,67,scraped
+Agathisflavone,,,0,not_found,5,68,cache
+Cupressuflavone,,,0,not_found,5,69,cache
+Dysideapyrrolidone,,,0,not_found,5,70,cache
+Desethylamiodarone,,,0,not_found,5,71,cache
+Dibromodiiodosilane,,,0,not_found,5,72,scraped
+Tetraiodoethylene,C513928,,0,no_boiling_point,5,73,scraped
+Dumosol,,,0,not_found,5,74,cache
+Alluaudiol,,,0,not_found,5,75,cache
+Stemonal,,,0,not_found,5,76,cache
+Pentabromoacetone,,,0,not_found,5,77,scraped
+Zinc dithiol,,,0,not_found,5,78,scraped
+Erythrosine alumane,,,0,not_found,5,79,cache
+Physalolactone,,,0,not_found,5,80,cache
+Dichloralphenazone,,,0,not_found,5,81,cache
+Pentabromobenzene,C608902,,0,no_boiling_point,5,82,scraped
+Chlordecone alcohol,,,0,not_found,5,83,scraped
+O-Acetyldysidamide,,,0,not_found,5,84,cache
+Decachlorodiphenyl ether,,,0,not_found,5,85,scraped
+Arbidol,,,0,not_found,5,86,cache
+Olodaterol,,,0,not_found,5,87,cache
+Icone,,,0,not_found,5,88,cache
+Stemonone,,,0,not_found,5,89,cache
+Daunorubicinol,,,0,not_found,5,90,cache
+Glutinosterone,,,0,not_found,5,91,cache
+Rehmannic acid,,,0,not_found,5,92,cache
+Westiellamide,,,0,not_found,5,93,cache
+Trifluperidol,C749133,,0,no_boiling_point,5,94,cache
+Tetraiodothyroacetic acid,,,0,not_found,5,95,cache
+Gossypetin 3-methyl ether,,,0,not_found,5,96,cache
+Zanthoxyl flavone,,,0,not_found,5,97,cache
+Hexabromoethane,C594730,,0,no_boiling_point,5,98,scraped
+Preulicyclamide,,,0,not_found,5,99,cache
+Elephantorrhizol,,,0,not_found,6,0,cache
+Thelephoric acid,,,0,not_found,6,1,cache
+Digallic Acid,,,0,not_found,6,2,cache
+Mellitic Acid,C517602,,0,no_boiling_point,6,3,cache
+Pyromellitic Acid,C89054,,0,no_boiling_point,6,4,cache
+S-Adenosylmethioninamine,,,0,not_found,6,5,cache
+Ellagic Acid,,,0,not_found,6,6,cache
+Isomaltitol,,,0,not_found,6,7,cache
+Lactitol,,,0,not_found,6,8,cache
+Cellobiotol,,,0,not_found,6,9,cache
+Melibiitol,,,0,not_found,6,10,cache
+Maltitol,,,0,not_found,6,11,cache
+S-Cysteinosuccinic acid,,,0,not_found,6,12,cache
+Furantetracarboxylic acid,,,0,not_found,6,13,cache
+Cyasterone,,,0,not_found,6,14,cache
+Pyrroloquinoline quinone,,,0,not_found,6,15,cache
+Glutathione,,,0,not_found,6,16,cache
+Sparfosic Acid,,,0,not_found,6,17,cache
+3-Glucogallic acid,,,0,not_found,6,18,cache
+Gossypol,,,0,not_found,6,19,cache
+Pamidronic Acid,,,0,not_found,6,20,cache
+Alendronic Acid,,,0,not_found,6,21,cache
+Berberal,,,0,not_found,6,22,cache
+Ash acid,,,0,not_found,6,23,cache
+Ajugalactone,,,0,not_found,6,24,cache
+Chromotropic acid,,,0,not_found,6,25,cache
+Galactinol,,,0,not_found,6,26,cache
+Triphosphoric acid,,,0,not_found,6,27,cache
+Inosinic Acid,,,0,not_found,6,28,cache
+Zenkersterone,,,0,not_found,6,29,cache
+Nomilinic acid,,,0,not_found,6,30,cache
+3'-Adenylic acid,,,0,not_found,6,31,cache
+5-Phosphoribosylamine,,,0,not_found,6,32,cache
+Tiron free acid,,,0,not_found,6,33,cache
+Fukiic acid,Fukiic acid,,0,no_boiling_point,6,34,cache
+Berbamine sulphate acid,,,0,not_found,6,35,cache
+Leucocianidol,,,0,not_found,6,36,cache
+Hexanitrobenzene,T999904620,,0,no_boiling_point,6,37,cache
+Amalic acid,,,0,not_found,6,38,cache
+Hexanitrosobenzene,,,0,not_found,6,39,cache
+Serylglutamic acid,,,0,not_found,6,40,cache
+Hexanitroethane,C918376,,0,no_boiling_point,6,41,cache
+Nitranilic acid,,,0,not_found,6,42,cache
+N-Gluconyl ethanolamine,,,0,not_found,6,43,cache
+Metatartaric acid,,,0,not_found,6,44,cache
+Cinnabarinic acid,,,0,not_found,6,45,cache
+Tryptophylglutamine,,,0,not_found,6,46,cache
+Amatol,,,0,not_found,6,47,cache
+Styphnic acid,C82713,,0,no_boiling_point,6,48,cache
+2'-Cytidylic acid,,,0,not_found,6,49,cache
+Flavianic acid,C483841,,0,no_boiling_point,6,50,cache
+H acid,,,0,not_found,6,51,cache
+Tetraisothiocyanatosilane,C6544021,,0,no_boiling_point,6,52,cache
+3'-Deoxydryopteric acid,,,0,not_found,6,53,cache
+Aspirin and oxycodone,,,0,not_found,6,54,cache
+beta-Neuraminic acid,,,0,not_found,6,55,cache
+Allantoin Panthenol,,,0,not_found,6,56,cache
+Fosfomycin Tromethamine,,,0,not_found,6,57,cache
+Fosetyl-al,,,0,not_found,6,58,cache
+s-Triaminotrinitrobenzene,C3058386,,0,no_boiling_point,6,59,cache
+Tryptophylaspartic acid,,,0,not_found,6,60,cache
+Glucoheptonic acid,,,0,not_found,6,61,cache
+Risedronic Acid,,,0,not_found,6,62,cache
+Heptathiazocane,,,0,not_found,6,63,cache
+Aureolic acid,,,0,not_found,6,64,cache
+Triamterene,C396010,,0,no_boiling_point,6,65,cache
+Crystamine,,,0,not_found,6,66,cache
+Taurolithocholic acid,,,0,not_found,6,67,cache
+Piscidic Acid,,,0,not_found,6,68,cache
+Uncariursanic acid,,,0,not_found,6,69,cache
+Trinitrophloroglucinol,,,0,not_found,6,70,cache
+Agamanone,,,0,not_found,6,71,cache
+Cobamamide,,,0,not_found,6,72,cache
+6-Hydroxykaempferol,,,0,not_found,6,73,cache
+Stemonacetal,,,0,not_found,6,74,cache
+Calditoglycerocaldachaeol,,,0,not_found,6,75,cache
+Arendal,,,0,not_found,6,76,cache
+4-Deoxyphysalolactone,,,0,not_found,6,77,cache
+Prodiamine,C29091212,,0,no_boiling_point,6,78,cache
+Lodoxamide,,,0,not_found,6,79,cache
+Naloxegol,,,0,not_found,6,80,cache
+Villinol,,,0,not_found,6,81,cache
+Dinitramine,C29091052,,0,no_boiling_point,6,82,cache
+4-Sulfophthalic acid,,,0,not_found,6,83,cache
+5-Sulfoisophthalic acid,,,0,not_found,6,84,cache
+Hydroxycitric acid,,,0,not_found,6,85,cache
+Mitsoamide,,,0,not_found,6,86,cache
+Dorzolamide,,,0,not_found,6,87,cache
+Blenoxane,,,0,not_found,6,88,cache
+Carbophenoxon sulfone,C16662876,,0,no_boiling_point,6,89,cache
+Leucocholic Acid,,,0,not_found,6,90,cache
+Syringaresinol,,,0,not_found,6,91,cache
+Haliclonyne,,,0,not_found,6,92,cache
+Hamilcone,,,0,not_found,6,93,cache
+Tyrosylglutamine,,,0,not_found,6,94,cache
+Darolutamide,,,0,not_found,6,95,cache
+Trimethylolmelamine,,,0,not_found,6,96,cache
+Phenoldisulfonic acid,,,0,not_found,6,97,cache
+Hydroxymethylbilane,,,0,not_found,6,98,cache
+Ixabepilone,,,0,not_found,6,99,cache
+Losartan carboxylic acid,,,0,not_found,7,0,cache
+Balaglitazone,,,0,not_found,7,1,cache
+Lurasidone,,,0,not_found,7,2,cache
+Vilazodone,,,0,not_found,7,3,cache
+Obyanamide,,,0,not_found,7,4,cache
+F8426-dicarboxylic acid,,,0,not_found,7,5,cache
+Nigerone,,,0,not_found,7,6,cache
+Isonigerone,,,0,not_found,7,7,cache
+Isoaurasperone,,,0,not_found,7,8,cache
+Troglitazone,,,0,not_found,7,9,cache
+Kekulene,,,0,not_found,7,10,scraped
+Perospirone,,,0,not_found,7,11,cache
+Hexaphenyldisilthiane,,,0,not_found,7,12,scraped
+Simetryn sylfone,R543776,,0,no_boiling_point,7,13,cache
+3-Acetyldeoxynivalenol,,,0,not_found,7,14,cache
+15-Acetyldeoxynivalenol,,,0,not_found,7,15,cache
+Hexaphenylmelamine,C18343403,,0,no_boiling_point,7,16,cache
+Glycodehydrocholic acid,,,0,not_found,7,17,cache
+Tranxene,,,0,not_found,7,18,cache
+Timolol,C91524162,,0,no_boiling_point,7,19,cache
+Topramezone,,,0,not_found,7,20,cache
+Hydroxypioglitazone,,,0,not_found,7,21,cache
+Floridamide,,,0,not_found,7,22,cache
+Heterophynone,,,0,not_found,7,23,cache
+Oryzanol,,,0,not_found,7,24,cache
+gamma-Oryzanol,,,0,not_found,7,25,cache
+Orizanol,,,0,not_found,7,26,cache
+Norbinaltorphimine,,,0,not_found,7,27,cache
+Cubebinone,C101751717,,0,no_boiling_point,7,28,cache
+Benzodrocortisone,,,0,not_found,7,29,cache
+Indapamide,,,0,not_found,7,30,cache
+Bitolterol,,,0,not_found,7,31,cache
+Usnic acid,,,0,not_found,7,32,cache
+Raloxifene,,,0,not_found,7,33,cache
+Lescol,,,0,not_found,7,34,cache
+Pyranochromene,,,0,not_found,7,35,cache
+Bicyclopyrone,,,0,not_found,7,36,cache
+Liquoric acid,,,0,not_found,7,37,cache
+Fenprostalene,,,0,not_found,7,38,cache
+Irigenin trimethyl ether,,,0,not_found,7,39,cache
+Ovral,,,0,not_found,7,40,cache
+Tetradodecylstannane,C5827565,,0,no_boiling_point,7,41,cache
+Polidocanol,,,0,not_found,7,42,cache
+Nivalenol,,,0,not_found,7,43,cache
+Ascidiacyclamide,,,0,not_found,7,44,cache
+Difethialone,,,0,not_found,7,45,cache
+Mesuol,,,0,not_found,7,46,cache
+Metolazone,C17560519,,0,no_boiling_point,7,47,cache
+Levofuraltadone,,,0,not_found,7,48,cache
+Furaltadone,,,0,not_found,7,49,cache
+Indanthrene,,,0,not_found,7,50,cache
+Lpc-Ether,,,0,not_found,7,51,cache
+Artelastochromene,,,0,not_found,7,52,cache
+Paliperidone,,,0,not_found,7,53,cache
+Decapropylene glycol,,,0,not_found,7,54,cache
+trans-Thiothixene,,,0,not_found,7,55,cache
+Thiothixene,C5591457,,0,no_boiling_point,7,56,cache
+Hexamollamide,,,0,not_found,7,57,cache
+Ecalcidene,,,0,not_found,7,58,cache
+Carpipramine,C5942950,,0,no_boiling_point,7,59,cache
+Helihumulone,,,0,not_found,7,60,cache
+Ergotamine,C113155,,0,no_boiling_point,7,61,cache
+Dihydroergotamine,C511126,,0,no_boiling_point,7,62,cache
+Larsucosterol,,,0,not_found,7,63,cache
+Onapristone,,,0,not_found,7,64,cache
+Nefazodone,C83366669,,0,no_boiling_point,7,65,cache
+Risperidone,,,0,not_found,7,66,cache
+Aristolochic acid,,,0,not_found,7,67,cache
+Anthothecol,,,0,not_found,7,68,cache
+Podophyllotoxone,,,0,not_found,7,69,cache
+Benzgalantamine,,,0,not_found,7,70,cache
+Hexaphenylbenzene,C992041,,0,no_boiling_point,7,71,scraped
+Circumanthracene,,,0,not_found,7,72,scraped
+Byrsonic acid,,,0,not_found,7,73,cache
+Preferrugone,,,0,not_found,7,74,cache
+Spiperone,C749020,,0,no_boiling_point,7,75,cache
+Bopindolol,,,0,not_found,7,76,cache
+Cilostazol,,,0,not_found,7,77,cache
+Licoricone,,,0,not_found,7,78,cache
+Isoaurmillone,,,0,not_found,7,79,cache
+Picotamide,,,0,not_found,7,80,cache
+Drometrizole trisiloxane,,,0,not_found,7,81,cache
+Halofuginone,,,0,not_found,7,82,cache
+Eschscholtzxanthone,,,0,not_found,7,83,scraped
+Lexacalcitol,,,0,not_found,7,84,cache
+Rubrene,C517511,,0,no_boiling_point,7,85,scraped
+Aurmillone,,,0,not_found,7,86,cache
+Amorpholone,,,0,not_found,7,87,cache
+Gravacridonetriol,,,0,not_found,7,88,cache
+Loteprednol,,,0,not_found,7,89,cache
+Dysidenamide,,,0,not_found,7,90,cache
+Barbexaclone,,,0,not_found,7,91,cache
+Demethylwedelolactone,,,0,not_found,7,92,cache
+Rotenolone,,,0,not_found,7,93,cache
+Sumatrol,,,0,not_found,7,94,cache
+9-Hydroxycalabaxanthone,,,0,not_found,7,95,cache
+alpha-Toxicarol,,,0,not_found,7,96,cache
+beta-Toxicarol,,,0,not_found,7,97,cache
+Bimatoprost Acid,,,0,not_found,7,98,cache
+Sulfalene,,,0,not_found,7,99,cache
+Hexaphenyldistannane,C1064104,,0,no_boiling_point,8,0,scraped
+Echinenone,,,0,not_found,8,1,scraped
+Phoenicopterone,,,0,not_found,8,2,scraped
+4-Ketotorulene,,,0,not_found,8,3,scraped
+Scytodecamide,,,0,not_found,8,4,cache
+3-Methoxyleprotene,,,0,not_found,8,5,scraped
+3-Hydroxyisorenieratene,,,0,not_found,8,6,scraped
+Torulene,,,0,not_found,8,7,scraped
+Tucupentol,,,0,not_found,8,8,cache
+Caciqueamide,,,0,not_found,8,9,cache
+Pectenolone,,,0,not_found,8,10,cache
