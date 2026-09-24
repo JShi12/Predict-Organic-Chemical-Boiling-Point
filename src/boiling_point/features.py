@@ -33,5 +33,12 @@ def select_model_features(df: pd.DataFrame, feature_cols=None) -> pd.DataFrame:
     return df[feature_cols or MODEL_FEATURE_COLUMNS].copy()
 
 
+def in_hard_region(df: pd.DataFrame, polararea_threshold: float = 40,
+                    rotbonds_threshold: float = 14) -> pd.Series:
+    """Boolean mask for the underrepresented outlier region from the error
+    analysis: high polar area and/or many rotatable bonds."""
+    return (df["polararea"] >= polararea_threshold) | (df["rotbonds"] >= rotbonds_threshold)
+
+
 def get_target(df: pd.DataFrame, target_col: str = "boiling_point_kelvin") -> pd.Series:
     return df[target_col].copy()

@@ -32,3 +32,11 @@ def merge_datasets(df1: pd.DataFrame, df2: pd.DataFrame, on: str = "cmpdname",
                     how: str = "inner") -> pd.DataFrame:
     """Merge the literature boiling-point data with PubChem properties."""
     return df1.merge(df2, on=on, how=how)
+
+
+def build_modelling_table(labels_df: pd.DataFrame, pubchem_df: pd.DataFrame) -> pd.DataFrame:
+    """Merge boiling-point labels with PubChem properties and add the
+    SMILES-derived features -- the same steps the main notebook applies."""
+    from .features import add_smiles_features
+    merged = merge_datasets(labels_df, pubchem_df).reset_index(drop=True)
+    return add_smiles_features(merged)
