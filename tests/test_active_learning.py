@@ -5,7 +5,8 @@ import torch
 from sklearn.linear_model import Ridge
 
 from boiling_point.active_learning import (
-    batch_schedule, fit_gp, gp_inputs, gp_select_batch, is_checkpoint, labels_to_match,
+    batch_schedule, bootstrap_xgb_models, compare_additions, feasibility_weighted_batch,
+    fit_feasibility_classifier, fit_gp, gp_inputs, gp_select_batch, is_checkpoint, labels_to_match,
     model_free_batch, run_strategy, uncertainty_calibration,
 )
 
@@ -219,3 +220,35 @@ def test_uncertainty_calibration_reports_both_selectors_and_sees_distance():
     # Unlabelled far cluster: the GP should be far less sure there.
     assert gp["rho_distance"] > 0.5
     assert gp["hard_over_easy"] > 1
+
+
+def test_compare_additions_detects_an_addition_that_fills_a_gap():
+    rng = np.random.default_rng(5)
+    f = lambda X: 300 + 30 * X[:, 0] + 20 * np.sin(X[:, 1])
+    X_base = rng.uniform(0, 3, size=(150, 2))           # base data covers only part of the range
+    X_test = rng.uniform(0, 6, size=(80, 2))
+    X_gap = rng.uniform(3, 6, size=(60, 2))             # the missing part
+    X_same = rng.uniform(0, 3, size=(60, 2))            # more of what we already have
+    hard_test = X_test[:, 0] > 3
+
+    table = compare_additions(X_base, f(X_base), X_test, f(X_test), hard_test,
+                              {"fills_gap": (X_gap, f(X_gap)), "more_of_same": (X_same, f(X_same))},
+                              seeds=[0], n_boot=200)
+
+    assert list(table.index) == ["base", "fills_gap", "more_of_same"]
+    assert table.loc["fills_gap", "rmse_hard"] < table.loc["more_of_same", "rmse_hard"]
+    low, high = table.loc["fills_gap", "rmse_hard_change_ci"]
+    assert high < 0  # confidently better than base in the gap region
+
+
+def test_feasibility_weighting_skips_uncertain_but_infeasible_candidates():
+    rng = np.random.default_rng(6)
+    X_lab = rng.uniform(0, 5, size=(120, 1))
+    models = bootstrap_xgb_models(X_lab, 300 + 10 * X_lab[:, 0] + rng.normal(size=120), n_models=5)
+    # Past lookups: small molecules (x < 12) were found, large ones never.
+    X_seen = rng.uniform(0, 30, size=(400, 1))
+    classifier = fit_feasibility_classifier(X_seen, X_seen[:, 0] < 12)
+    # Both far from the labelled range (uncertain); only the first is feasible.
+    X_cand = np.array([[10.0], [25.0]])
+
+    assert feasibility_weighted_batch(models, classifier, X_cand, 1) == [0]

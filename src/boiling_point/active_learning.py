@@ -31,7 +31,7 @@ from linear_operator.utils.cholesky import psd_safe_cholesky
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import Ridge
 from sklearn.neural_network import MLPRegressor
-from xgboost import XGBRegressor
+from xgboost import XGBClassifier, XGBRegressor
 
 from .ensemble import AverageEnsembleRegressor
 
@@ -201,6 +201,29 @@ def bootstrap_select_batch(models: list, X_candidates, batch_size: int) -> list:
     """Top batch_size candidates by spread across the bootstrap members."""
     _, std = bootstrap_predict(models, X_candidates)
     return list(np.argsort(-std, kind="stable")[:batch_size])
+
+
+# --- Feasibility-aware selection -----------------------------------------------
+# Uncertainty alone favours exotic compounds (large drug/dye-like molecules)
+# that often have no normal boiling point at all -- they decompose first -- so
+# a NIST lookup for them is wasted. Weighting uncertainty by the predicted
+# chance that the lookup succeeds ranks by expected useful uncertainty per
+# lookup instead.
+
+def fit_feasibility_classifier(X, found, random_state: int = 0) -> XGBClassifier:
+    """P(a NIST lookup returns a boiling point) from the molecular features,
+    trained on recorded lookup outcomes (found = 1, anything else = 0)."""
+    clf = XGBClassifier(n_estimators=200, max_depth=3, learning_rate=0.05, min_child_weight=3,
+                        random_state=random_state, n_jobs=1)
+    return clf.fit(np.asarray(X, dtype=float), np.asarray(found, dtype=int))
+
+
+def feasibility_weighted_batch(models: list, classifier, X_candidates, batch_size: int) -> list:
+    """Top batch_size candidates by bootstrap spread x P(lookup succeeds)."""
+    X_cand = np.asarray(X_candidates, dtype=float)
+    _, std = bootstrap_predict(models, X_cand)
+    p_found = classifier.predict_proba(X_cand)[:, 1]
+    return list(np.argsort(-(std * p_found), kind="stable")[:batch_size])
 
 
 # --- Simulation ----------------------------------------------------------------
@@ -386,3 +409,52 @@ def uncertainty_calibration(X, y, hard_mask, labelled, test_idx, seed: int = 0) 
             "top10_error_ratio": ens_err[top].mean() / ens_err.mean(),
         })
     return pd.DataFrame(rows)
+
+
+def compare_additions(X_base, y_base, X_test, y_test, hard_test, additions: dict,
+                      seeds=range(5), n_boot: int = 2000) -> pd.DataFrame:
+    """Does adding a set of new compounds improve the production ensemble?
+
+    Trains the ensemble on the base data alone and on base + each addition
+    (same fixed hyperparameters; predictions averaged over `seeds` of the
+    ensemble's own randomness), then scores all of them on the same test
+    set. Differences from the base model come with 95% bootstrap intervals
+    over test rows (paired: same resampled rows for both models).
+
+    additions: {name: (X_add, y_add)}. Returns one row per arm (base first)
+    with rmse / rmse_hard and, for additions, the change vs base.
+    """
+    X_base, y_base = np.asarray(X_base, dtype=float), np.asarray(y_base, dtype=float)
+    X_test, y_test = np.asarray(X_test, dtype=float), np.asarray(y_test, dtype=float)
+    hard_test = np.asarray(hard_test, dtype=bool)
+
+    def averaged_predictions(X_train, y_train):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", ConvergenceWarning)
+            return np.mean([make_production_ensemble(random_state=s).fit(X_train, y_train).predict(X_test)
+                            for s in seeds], axis=0)
+
+    arms = {"base": averaged_predictions(X_base, y_base)}
+    for name, (X_add, y_add) in additions.items():
+        arms[name] = averaged_predictions(np.vstack([X_base, np.asarray(X_add, dtype=float)]),
+                                          np.concatenate([y_base, np.asarray(y_add, dtype=float)]))
+
+    rng = np.random.default_rng(0)
+    boot = rng.integers(0, len(y_test), size=(n_boot, len(y_test)))
+    hard_idx = np.flatnonzero(hard_test)
+    boot_hard = hard_idx[rng.integers(0, len(hard_idx), size=(n_boot, len(hard_idx)))]
+
+    def rmse_rows(pred, rows):
+        return np.sqrt(((pred[rows] - y_test[rows]) ** 2).mean(axis=-1))
+
+    out = []
+    for name, pred in arms.items():
+        row = {"arm": name, "n_added": 0 if name == "base" else len(additions[name][1]),
+               "rmse": _rmse(y_test, pred), "rmse_hard": _rmse(y_test[hard_test], pred[hard_test])}
+        if name != "base":
+            for metric, rows in (("rmse", boot), ("rmse_hard", boot_hard)):
+                diff = rmse_rows(pred, rows) - rmse_rows(arms["base"], rows)
+                row[f"{metric}_change"] = row[metric] - out[0][metric]
+                row[f"{metric}_change_ci"] = tuple(float(v) for v in np.round(np.percentile(diff, [2.5, 97.5]), 2))
+        out.append(row)
+    return pd.DataFrame(out).set_index("arm")
