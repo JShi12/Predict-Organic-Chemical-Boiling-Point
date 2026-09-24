@@ -1,0 +1,18 @@
+{
+ "feature_set": "old 12",
+ "model": "mlp",
+ "params": {
+  "mlp": {
+   "regressor__model__solver": "adam",
+   "regressor__model__learning_rate_init": 0.001,
+   "regressor__model__learning_rate": "constant",
+   "regressor__model__hidden_layer_sizes": [
+    100,
+    50,
+    20
+   ],
+   "regressor__model__alpha": 0.01,
+   "regressor__model__activation": "relu"
+  }
+ }
+}
