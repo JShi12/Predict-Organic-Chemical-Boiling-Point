@@ -14,6 +14,8 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+from .features import in_hard_region
+
 CRAWL_DELAY_SECONDS = 5.0
 NIST_TBOIL_URL = "https://webbook.nist.gov/cgi/cbook.cgi?ID={compound_id}&Units=SI&Type=TBOIL"
 CSV_FIELDS = ["cmpdname", "nist_id", "boiling_point_kelvin", "n_measurements", "status"]
@@ -28,6 +30,23 @@ _SIMPLE_NAME_SUFFIXES = (
 )
 
 
+def select_nist_likely_candidates(pubchem_df: pd.DataFrame, already_have_names,
+                                   max_name_length: int = 25, max_hyphens: int = 1) -> pd.DataFrame:
+    """PubChem rows not already in our dataset whose names look simple
+    enough that NIST WebBook is likely to actually have them (random PubChem
+    names had a 0% hit rate). No filter on chemical region -- used as the
+    candidate pool for model-driven selection."""
+    candidates = pubchem_df[~pubchem_df["cmpdname"].isin(already_have_names)]
+    suffix_pattern = "(?:" + "|".join(_SIMPLE_NAME_SUFFIXES) + ")$"
+    return candidates[
+        (~candidates["cmpdname"].str.contains(r"[,()\[\]]", regex=True, na=True))
+        & (candidates["cmpdname"].str.len() <= max_name_length)
+        & (candidates["cmpdname"].str.count("-") <= max_hyphens)
+        & (~candidates["cmpdname"].str.match(r"^CID ", na=False))
+        & (candidates["cmpdname"].str.contains(suffix_pattern, regex=True, case=False, na=False))
+    ]
+
+
 def select_targeted_candidates(pubchem_df: pd.DataFrame, already_have_names,
                                 polararea_threshold: float = 40, rotbonds_threshold: float = 14,
                                 max_name_length: int = 25, max_hyphens: int = 1) -> pd.Series:
@@ -35,16 +54,9 @@ def select_targeted_candidates(pubchem_df: pd.DataFrame, already_have_names,
     high polar area and/or rotatable bonds (the underrepresented outlier
     region from the error analysis), and simple-looking names (biases
     toward names NIST WebBook is likely to actually have)."""
-    candidates = pubchem_df[~pubchem_df["cmpdname"].isin(already_have_names)]
-    suffix_pattern = "(?:" + "|".join(_SIMPLE_NAME_SUFFIXES) + ")$"
-    targeted = candidates[
-        ((candidates["polararea"] >= polararea_threshold) | (candidates["rotbonds"] >= rotbonds_threshold))
-        & (~candidates["cmpdname"].str.contains(r"[,()\[\]]", regex=True, na=True))
-        & (candidates["cmpdname"].str.len() <= max_name_length)
-        & (candidates["cmpdname"].str.count("-") <= max_hyphens)
-        & (~candidates["cmpdname"].str.match(r"^CID ", na=False))
-        & (candidates["cmpdname"].str.contains(suffix_pattern, regex=True, case=False, na=False))
-    ]
+    candidates = select_nist_likely_candidates(pubchem_df, already_have_names,
+                                               max_name_length, max_hyphens)
+    targeted = candidates[in_hard_region(candidates, polararea_threshold, rotbonds_threshold)]
     return targeted["cmpdname"]
 
 
@@ -105,21 +117,24 @@ def scrape_boiling_points(names, output_path: str, crawl_delay: float = CRAWL_DE
         for name in names:
             if name in already_done:
                 continue
-            try:
-                compound_id = resolve_compound_id(name)
-                time.sleep(crawl_delay)
-                if compound_id is None:
-                    row = [name, "", "", 0, "not_found"]
-                else:
-                    values = fetch_boiling_point(compound_id)
-                    time.sleep(crawl_delay)
-                    if values:
-                        median = sorted(values)[len(values) // 2]
-                        row = [name, compound_id, round(median, 2), len(values), "found"]
-                    else:
-                        row = [name, compound_id, "", 0, "no_boiling_point"]
-            except Exception as e:
-                row = [name, "", "", 0, f"error:{e}"]
-
-            writer.writerow(row)
+            writer.writerow(lookup_boiling_point(name, crawl_delay))
             f.flush()
+
+
+def lookup_boiling_point(name: str, crawl_delay: float = CRAWL_DELAY_SECONDS) -> list:
+    """Look up one compound on NIST WebBook, sleeping crawl_delay after each
+    request. Returns a row matching CSV_FIELDS; status is found /
+    not_found / no_boiling_point / error:<message>."""
+    try:
+        compound_id = resolve_compound_id(name)
+        time.sleep(crawl_delay)
+        if compound_id is None:
+            return [name, "", "", 0, "not_found"]
+        values = fetch_boiling_point(compound_id)
+        time.sleep(crawl_delay)
+        if values:
+            median = sorted(values)[len(values) // 2]
+            return [name, compound_id, round(median, 2), len(values), "found"]
+        return [name, compound_id, "", 0, "no_boiling_point"]
+    except Exception as e:
+        return [name, "", "", 0, f"error:{e}"]
