@@ -11,3 +11,5 @@ nbconvert
 pytest
 nistchempy
 beautifulsoup4
+torch
+botorch
