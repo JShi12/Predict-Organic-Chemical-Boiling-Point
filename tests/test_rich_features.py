@@ -26,6 +26,14 @@ def test_element_counts_and_unsaturation_counts():
     assert d[1]["n_double_CC"] == 1 and d[1]["n_triple_CC"] == 1
 
 
+def test_kappa3_is_zero_for_molecules_too_small_to_define_it():
+    d = curated_descriptors(["CO", "C=C", "CN", "CCCC"])
+
+    assert d["Kappa3"].tolist()[:3] == [0.0, 0.0, 0.0]   # RDKit alone gives -27, -6, -27
+    assert d["Kappa3"].iloc[3] > 0
+    assert not log_size_shape(d).isna().any().any()
+
+
 def test_curated_descriptors_have_every_column_and_no_nans():
     d = curated_descriptors(["CCO", "CCN(C)C", "CCCCCCCC", "OCCOCCO"])
 
@@ -152,3 +160,39 @@ def test_fold_metrics_and_final_model_use_all_rows():
     model, params = fit_final_model("ensemble", X, y, families, n_inner=2, n_iter=2)
     assert set(params) == {"ridge", "xgboost", "mlp"}
     assert model.predict(X).shape == (len(y),)
+
+
+class _FailsWhenLarge:
+    """Toy regressor that 'diverges' (raises) when its parameter is large."""
+    def __init__(self, a=0):
+        self.a = a
+
+    def get_params(self, deep=True):
+        return {"a": self.a}
+
+    def set_params(self, **params):
+        self.a = params.get("a", self.a)
+        return self
+
+    def fit(self, X, y):
+        if self.a > 5:
+            raise ValueError("Solver produced non-finite parameter weights.")
+        self.mean_ = float(np.mean(y))
+        return self
+
+    def predict(self, X):
+        return np.full(len(X), self.mean_)
+
+
+def test_refit_best_falls_back_to_the_next_ranked_candidate_that_fits():
+    from boiling_point.validation import refit_best
+    cv_results = {"params": [{"a": 1}, {"a": 9}, {"a": 3}],
+                  "rank_test_score": np.array([3, 1, 2]),
+                  "mean_test_score": np.array([-5.0, -1.0, -2.0])}
+    X, y = np.zeros((4, 1)), np.array([1.0, 2, 3, 4])
+
+    tuned = refit_best(_FailsWhenLarge(), cv_results, X, y)
+
+    assert tuned.best_params_ == {"a": 3}       # best (a=9) diverges, next-best is used
+    assert tuned.refit_fallbacks == 1
+    np.testing.assert_allclose(tuned.predict(X), 2.5)

@@ -19,6 +19,14 @@ _UNSATURATION = {"n_double_CC": Chem.MolFromSmarts("C=C"), "n_triple_CC": Chem.M
 ELEMENTS = ["C", "O", "N", "S", "F", "Cl", "Br", "I", "B"]
 
 
+def kappa3(mol) -> float:
+    """Kier's third shape index. It is only defined for molecules with at
+    least 4 heavy atoms; RDKit returns meaningless (negative) values below
+    that (e.g. -27 for methanol), so those get 0, like the other indices
+    when there are no paths of the required length."""
+    return rdMolDescriptors.CalcKappa3(mol) if mol.GetNumHeavyAtoms() >= 4 else 0.0
+
+
 def wiener_index(mol) -> float:
     """Sum of shortest-path distances between all pairs of heavy atoms.
     Introduced by Wiener (1947) for alkane boiling points: branched isomers
@@ -37,7 +45,7 @@ DESCRIPTOR_GROUPS = {
         "WienerIndex": wiener_index,
         "Kappa1": rdMolDescriptors.CalcKappa1,
         "Kappa2": rdMolDescriptors.CalcKappa2,
-        "Kappa3": rdMolDescriptors.CalcKappa3,
+        "Kappa3": kappa3,
         "Chi0v": rdMolDescriptors.CalcChi0v,
         "Chi1v": rdMolDescriptors.CalcChi1v,
         "BalabanJ": GraphDescriptors.BalabanJ,
@@ -87,6 +95,8 @@ def log_size_shape(descriptors: pd.DataFrame) -> pd.DataFrame:
     all are non-negative. Other columns are unchanged."""
     out = descriptors.copy()
     for col in LOG_COLUMNS:
+        if (out[col] < 0).any():
+            raise ValueError(f"{col} has negative values; log1p needs non-negative input")
         out[col] = np.log1p(out[col])
     return out.rename(columns={c: f"log_{c}" for c in LOG_COLUMNS})
 
@@ -100,7 +110,11 @@ def curated_descriptors(smiles) -> pd.DataFrame:
             raise ValueError(f"RDKit could not parse SMILES {s!r}")
         rows.append({name: float(fn(mol)) for group in DESCRIPTOR_GROUPS.values() for name, fn in group.items()})
     index = smiles.index if isinstance(smiles, pd.Series) else None
-    return pd.DataFrame(rows, columns=CURATED_COLUMNS, index=index)
+    out = pd.DataFrame(rows, columns=CURATED_COLUMNS, index=index)
+    if not np.isfinite(out.to_numpy()).all():
+        bad = out.columns[~np.isfinite(out.to_numpy()).all(axis=0)].tolist()
+        raise ValueError(f"non-finite descriptor values in {bad}")
+    return out
 
 
 class DropCorrelated(BaseEstimator, TransformerMixin):
