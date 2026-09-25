@@ -133,15 +133,11 @@ dmypy.json
 # Other
 .DS_Store
 .idea
-data/*
-!data/pubchem_subset.csv
-!data/label_audit.csv
-!data/nist_audit_lookups.csv
 depricated/
 *.pkl
 
-# Large raw data file (see README for re-download instructions)
-compound_property_from_PubChem.csv
+# Large raw data file (see README; data/pubchem_subset.csv is used instead)
+data/compound_property_from_PubChem.csv
 
 # Claude Code local tooling
 .claude/

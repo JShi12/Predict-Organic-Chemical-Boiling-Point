@@ -34,10 +34,10 @@ PICKS_SAVED = 550  # labelling order saved up to this many labels (the small-bat
 
 def load_dataset():
     labels = pd.concat([
-        data.load_literature_data("compound_boiling_points_from_literature.xlsx"),
-        data.load_nist_data("compound_boiling_points_from_nist.csv"),
+        data.load_literature_data("data/compound_boiling_points_from_literature.xlsx"),
+        data.load_nist_data("data/compound_boiling_points_from_nist.csv"),
     ], ignore_index=True)
-    pubchem = data.load_pubchem_data("compound_property_from_PubChem.csv")
+    pubchem = data.load_pubchem_data("data/compound_property_from_PubChem.csv")
     return data.build_modelling_table(labels, pubchem)
 
 

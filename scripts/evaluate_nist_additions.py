@@ -50,9 +50,9 @@ def heldout_run(X_base, y_base, X_new, y_new, split_seed, half):
 
 
 def main():
-    pubchem = data.load_pubchem_data("compound_property_from_PubChem.csv")
+    pubchem = data.load_pubchem_data("data/compound_property_from_PubChem.csv")
     literature = data.build_modelling_table(
-        data.load_literature_data("compound_boiling_points_from_literature.xlsx"), pubchem)
+        data.load_literature_data("data/compound_boiling_points_from_literature.xlsx"), pubchem)
     X = features.select_model_features(literature)
     y = features.get_target(literature)
     hard = features.in_hard_region(literature)
@@ -60,8 +60,8 @@ def main():
     X_base = pd.concat([X_train, X_val]).to_numpy(dtype=float)
     y_base = pd.concat([y_train, y_val]).to_numpy(dtype=float)
 
-    heuristic = data.build_modelling_table(data.load_nist_data("compound_boiling_points_from_nist.csv"), pubchem)
-    run = pd.read_csv("nist_boiling_points_feasibility_aware.csv")
+    heuristic = data.build_modelling_table(data.load_nist_data("data/compound_boiling_points_from_nist.csv"), pubchem)
+    run = pd.read_csv("data/nist_boiling_points_feasibility_aware.csv")
     model_hits = run[run["status"] == "found"].head(N_ADDED)[["cmpdname", "boiling_point_kelvin"]]
     model_chosen = data.build_modelling_table(model_hits, pubchem)
     X_h, y_h = to_xy(heuristic)
