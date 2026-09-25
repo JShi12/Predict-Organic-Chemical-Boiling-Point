@@ -74,6 +74,22 @@ DESCRIPTOR_GROUPS = {
 }
 CURATED_COLUMNS = [name for group in DESCRIPTOR_GROUPS.values() for name in group]
 
+# Size and shape descriptors grow steeply with molecule size (the Wiener
+# index roughly with the cube of chain length), so the few giant molecules
+# in the data sit far outside the range of typical compounds. A log
+# compresses that tail. BalabanJ is already size-normalised, so it stays.
+LOG_COLUMNS = (list(DESCRIPTOR_GROUPS["size / polarizability (dispersion forces)"])
+               + [c for c in DESCRIPTOR_GROUPS["branching / shape (contact area)"] if c != "BalabanJ"])
+
+
+def log_size_shape(descriptors: pd.DataFrame) -> pd.DataFrame:
+    """Replace each LOG_COLUMNS descriptor with log1p of it (renamed log_<name>);
+    all are non-negative. Other columns are unchanged."""
+    out = descriptors.copy()
+    for col in LOG_COLUMNS:
+        out[col] = np.log1p(out[col])
+    return out.rename(columns={c: f"log_{c}" for c in LOG_COLUMNS})
+
 
 def curated_descriptors(smiles) -> pd.DataFrame:
     """One row per SMILES, one column per curated descriptor."""

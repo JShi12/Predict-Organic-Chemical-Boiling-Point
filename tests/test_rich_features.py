@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
-from boiling_point.descriptors import CURATED_COLUMNS, DropCorrelated, curated_descriptors
+from boiling_point.descriptors import (
+    CURATED_COLUMNS, LOG_COLUMNS, DropCorrelated, curated_descriptors, log_size_shape,
+)
 from boiling_point.families import assign_family, merge_rare_families
 from boiling_point.validation import (
     fit_final_model, fold_metrics, outer_splits, run_outer_fold, stratification_labels,
@@ -29,6 +31,19 @@ def test_curated_descriptors_have_every_column_and_no_nans():
 
     assert list(d.columns) == CURATED_COLUMNS
     assert not d.isna().any().any()
+
+
+def test_log_size_shape_compresses_only_size_and_shape_columns():
+    d = curated_descriptors(["CCCC", "C" * 40])
+    logged = log_size_shape(d)
+
+    assert "log_WienerIndex" in logged and "WienerIndex" not in logged
+    np.testing.assert_allclose(logged["log_WienerIndex"], np.log1p(d["WienerIndex"]))
+    assert "BalabanJ" in logged and "BalabanJ" not in LOG_COLUMNS
+    pd.testing.assert_series_equal(logged["TPSA"], d["TPSA"])
+    # The 40-carbon chain is ~1,000x the butane's Wiener index but only ~7 log units apart
+    assert d["WienerIndex"].iloc[1] / d["WienerIndex"].iloc[0] > 1000
+    assert logged["log_WienerIndex"].iloc[1] - logged["log_WienerIndex"].iloc[0] < 8
 
 
 def test_drop_correlated_keeps_one_of_each_near_duplicate_pair():
@@ -129,6 +144,10 @@ def test_fold_metrics_and_final_model_use_all_rows():
                           "row": np.arange(4), "y_true": [1.0, 2, 3, 4], "y_pred": [1.0, 2, 3, 6]})
     m = fold_metrics(preds, hard_mask=np.array([False, False, True, True])).iloc[0]
     assert m["rmse"] == pytest.approx(1.0) and m["rmse_hard"] == pytest.approx(np.sqrt(2))
+
+    from boiling_point.validation import SELECTION_SCORING, make_search
+    assert SELECTION_SCORING == "neg_mean_absolute_error"
+    assert make_search("ridge", 2, n_iter=2).scoring == "neg_mean_absolute_error"
 
     model, params = fit_final_model("ensemble", X, y, families, n_inner=2, n_iter=2)
     assert set(params) == {"ridge", "xgboost", "mlp"}

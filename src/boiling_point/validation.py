@@ -7,6 +7,11 @@ training fold, so no outer-test compound ever influences tuning. The fold
 models are measuring instruments and are discarded; fit_final_model then
 runs the winning recipe's tuning on all the data.
 
+Selection metric: MAE by default -- for tuning inside each fold and for
+choosing the final recipe -- so a handful of extreme compounds (whose
+labels are the least reliable) can't dominate the choice. RMSE is still
+reported alongside.
+
 Models: Ridge, XGBoost and an MLP, each with its own preprocessing
 pipeline, plus their average (the ensemble). Ridge and the MLP standardise
 X and y; all models drop constant features; Ridge and the MLP also drop
@@ -32,6 +37,7 @@ from xgboost import XGBRegressor
 from .descriptors import DropCorrelated
 from .models import MLP_PARAM_GRID, RIDGE_PARAM_GRID, XGB_PARAM_GRID
 
+SELECTION_SCORING = "neg_mean_absolute_error"
 BASE_MODELS = ("ridge", "xgboost", "mlp")
 ENSEMBLE = "ensemble"
 
@@ -54,7 +60,8 @@ def _scaled(model):
     return TransformedTargetRegressor(regressor=pipe, transformer=StandardScaler())
 
 
-def make_search(model: str, inner_cv, n_iter: int, random_state: int = 0) -> RandomizedSearchCV:
+def make_search(model: str, inner_cv, n_iter: int, random_state: int = 0,
+                scoring: str = SELECTION_SCORING) -> RandomizedSearchCV:
     """Randomized search over the original project's grids (models.py)."""
     if model == "ridge":
         estimator, grid, prefix = _scaled(Ridge()), RIDGE_PARAM_GRID, "regressor__model__"
@@ -71,7 +78,7 @@ def make_search(model: str, inner_cv, n_iter: int, random_state: int = 0) -> Ran
     grid = {prefix + k: v for k, v in grid.items()}
     n_candidates = int(np.prod([len(v) for v in grid.values()]))
     return RandomizedSearchCV(estimator, grid, n_iter=min(n_iter, n_candidates), cv=inner_cv,
-                              scoring="neg_mean_squared_error", random_state=random_state, n_jobs=1)
+                              scoring=scoring, random_state=random_state, n_jobs=1)
 
 
 def _inner_cv(strat_train, n_splits, random_state):
@@ -83,8 +90,8 @@ def _rmse(y, p):
     return float(np.sqrt(np.mean((np.asarray(y) - np.asarray(p)) ** 2)))
 
 
-def _tune(model, X, y, strat, n_inner, n_iter, random_state):
-    search = make_search(model, _inner_cv(strat, n_inner, random_state), n_iter, random_state)
+def _tune(model, X, y, strat, n_inner, n_iter, random_state, scoring=SELECTION_SCORING):
+    search = make_search(model, _inner_cv(strat, n_inner, random_state), n_iter, random_state, scoring)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ConvergenceWarning)
         search.fit(X, y)
