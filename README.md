@@ -1,5 +1,6 @@
 # Predict Organic Chemical Boiling Point
 
+[![CI](https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point/actions/workflows/ci.yml/badge.svg)](https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
 
