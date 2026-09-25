@@ -1,10 +1,19 @@
 """Loading and merging the two source datasets."""
+import os
+import warnings
+from pathlib import Path
+
 import pandas as pd
 
 PUBCHEM_COLUMNS = [
     "cmpdname", "mw", "mf", "polararea", "hbonddonor", "hbondacc",
     "rotbonds", "heavycnt", "isosmiles", "charge",
 ]
+
+# The full PubChem download (~77 MB, not committed) and the committed subset
+# of the rows this project uses (built by scripts/build_pubchem_subset.py).
+PUBCHEM_FULL_PATH = "compound_property_from_PubChem.csv"
+PUBCHEM_SUBSET_PATH = str(Path(__file__).resolve().parents[2] / "data" / "pubchem_subset.csv")
 
 
 def load_literature_data(path: str) -> pd.DataFrame:
@@ -20,10 +29,15 @@ def load_nist_data(path: str) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-def load_pubchem_data(path: str, columns=None) -> pd.DataFrame:
+def load_pubchem_data(path: str = PUBCHEM_FULL_PATH, columns=None) -> pd.DataFrame:
     """Load the PubChem physicochemical property dataset, keeping only
     the columns useful for modeling (the raw download also has string
-    columns that aren't needed here)."""
+    columns that aren't needed here). If the full download isn't present,
+    falls back to the committed subset, which holds every row this project
+    uses, so all notebooks and scripts give the same results."""
+    if not os.path.exists(path) and os.path.exists(PUBCHEM_SUBSET_PATH):
+        warnings.warn(f"{path} not found; using the committed subset {PUBCHEM_SUBSET_PATH}", stacklevel=2)
+        path = PUBCHEM_SUBSET_PATH
     df = pd.read_csv(path)
     return df[columns or PUBCHEM_COLUMNS]
 

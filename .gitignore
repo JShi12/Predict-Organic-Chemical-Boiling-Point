@@ -133,7 +133,8 @@ dmypy.json
 # Other
 .DS_Store
 .idea
-data/
+data/*
+!data/pubchem_subset.csv
 depricated/
 *.pkl
 
