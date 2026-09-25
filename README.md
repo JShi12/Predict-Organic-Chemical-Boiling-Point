@@ -31,7 +31,7 @@ The project has five parts, each with its own notebook:
 
 | Notebook | Question | Key result |
 |---|---|---|
-| [`Boiling_Point_Predicter.ipynb`](Boiling_Point_Predicter.ipynb) | Which classic model predicts boiling point best? | Five architectures perform comparably, so a Ridge + XGBoost + neural-network ensemble is used. Test RMSE ≈26 K, but on an unusually easy split (see part 3). |
+| [`Boiling_Point_Predictor.ipynb`](Boiling_Point_Predictor.ipynb) | Which classic model predicts boiling point best? | Five architectures perform comparably, so a Ridge + XGBoost + neural-network ensemble is used. Test RMSE ≈26 K, but on an unusually easy split (see part 3). |
 | [`Active_Learning.ipynb`](Active_Learning.ipynb) | Which compounds should be measured next? | Model-chosen labels reach random picking's accuracy with ~27–47% fewer labels. A feasibility-aware NIST round found 105 new boiling points in 302 lookups, against 3,553 for the hand-written rule. |
 | [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested, family-stratified CV gives ~16.4 K MAE (~33 K RMSE) on all labels. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
 | [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | 327 labels are Joback group-contribution estimates (identical to the formula to 0.01 K), which run 100–250 K too high for large molecules; 10 more are wrong or implausible. On the 1,251 measured labels the curated descriptors win clearly: **~10.7 K MAE**. |
@@ -46,7 +46,7 @@ The project has five parts, each with its own notebook:
 
 ```
 .
-├── Boiling_Point_Predicter.ipynb   # main analysis notebook (narrative + EDA)
+├── Boiling_Point_Predictor.ipynb   # main analysis notebook (narrative + EDA)
 ├── Active_Learning.ipynb           # which compounds to measure next: GP-driven active learning
 ├── Boiling_Point_RDKit.ipynb       # fresh start: curated RDKit descriptors, nested family-stratified CV
 ├── Label_Audit.ipynb               # which labels are measurements? audit + re-evaluation on measured labels
@@ -118,7 +118,7 @@ pip install -r requirements.txt
 
 # no data download needed: data/pubchem_subset.csv is used automatically (see Data above)
 
-jupyter notebook Boiling_Point_Predicter.ipynb   # or Active_Learning.ipynb / Boiling_Point_RDKit.ipynb
+jupyter notebook Boiling_Point_Predictor.ipynb   # or Active_Learning.ipynb / Boiling_Point_RDKit.ipynb
 ```
 
 Run the test suite:
@@ -153,7 +153,7 @@ pytest tests/
 
 All models show higher validation error than training error, indicating some overfitting. The **Neural Network** actually achieves the lowest error on *both* the training and validation sets here — though its train→validation gap (15.7 K) is the largest of the five, making it the least stable of the models tested on this particular split.
 
-A repeated-resampling check (refitting each architecture's tuned hyperparameters across 10 different train/val splits by changing the ramdom_state seed) shows the mean ± std validation RMSE ranges overlap substantially across all five architectures — none of the differences above are large relative to the spread, so picking a single "champion" would largely reflect which rows landed in the validation set on this one split, not a real difference in architecture quality. Instead, a **simple-averaging ensemble of Ridge, XGBoost, and the Neural Network** is used — one representative of each genuinely different inductive bias (linear/regularized, tree/boosting, nonlinear), which is what makes averaging predictions useful rather than just noise. Random Forest is left out as redundant with XGBoost (same tree-based family, and XGBoost had the edge in most single-split comparisons); SVR is left out for being the least stable across splits (highest variance, ±6.6 K vs ±3.3-5.3 K for the others) despite a competitive mean.
+A repeated-resampling check (refitting each architecture's tuned hyperparameters across 10 different train/val splits by changing the random_state seed) shows the mean ± std validation RMSE ranges overlap substantially across all five architectures — none of the differences above are large relative to the spread, so picking a single "champion" would largely reflect which rows landed in the validation set on this one split, not a real difference in architecture quality. Instead, a **simple-averaging ensemble of Ridge, XGBoost, and the Neural Network** is used — one representative of each genuinely different inductive bias (linear/regularized, tree/boosting, nonlinear), which is what makes averaging predictions useful rather than just noise. Random Forest is left out as redundant with XGBoost (same tree-based family, and XGBoost had the edge in most single-split comparisons); SVR is left out for being the least stable across splits (highest variance, ±6.6 K vs ±3.3-5.3 K for the others) despite a competitive mean.
 
 The ensemble was fit on the combined training + validation set, then evaluated on the untouched test set:
 

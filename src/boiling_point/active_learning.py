@@ -44,7 +44,7 @@ torch.set_num_threads(1)
 STRATEGIES = ("random", "heuristic", "gp_uncertainty", "bootstrap_xgb")
 
 # Hyperparameters from the main notebook's train+val re-tune of the ensemble
-# members (Boiling_Point_Predicter.ipynb, "Build the Ensemble"). Held fixed
+# members (Boiling_Point_Predictor.ipynb, "Build the Ensemble"). Held fixed
 # here: re-running GridSearchCV at every checkpoint would be slow and would
 # add noise unrelated to which compounds were labelled.
 XGB_PARAMS = dict(objective="reg:squarederror", learning_rate=0.1, max_depth=3,
