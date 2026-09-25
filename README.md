@@ -3,7 +3,7 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
 
-An end-to-end machine learning project for predicting the normal boiling point of organic compounds from molecular structure and physicochemical properties. The repository covers data collection, feature engineering, model comparison, ensemble regression, error analysis, targeted dataset expansion from the NIST Chemistry WebBook, active learning to decide which compounds to measure next, a rigorous re-evaluation with curated RDKit descriptors and nested cross-validation, and an audit of which boiling-point labels are real measurements.
+An end-to-end machine learning project for predicting the normal boiling point of organic compounds from molecular structure and physicochemical properties. The repository covers data collection, feature engineering, model comparison, ensemble regression, error analysis, targeted dataset expansion from the NIST Chemistry WebBook, active learning to decide which compounds to measure next, a rigorous re-evaluation with curated RDKit descriptors and nested cross-validation, an audit of which boiling-point labels are real measurements, and Bayesian optimisation to find compounds that meet a specification with as few experiments as possible.
 
 The benchmark uses 1,588 literature compounds and reports results in kelvin. An audit found that 327 of those labels are group-contribution *estimates* rather than measurements, plus a handful of wrong values. On the 1,251 measured labels, nested family-stratified cross-validation gives **about 10.7 K mean absolute error (≈22 K RMSE)**. The project is designed as a reproducible cheminformatics experiment, not as a substitute for experimental measurements.
 
@@ -21,12 +21,13 @@ The benchmark uses 1,588 literature compounds and reports results in kelvin. An 
 - [Active Learning: Which Compounds to Measure Next](#active-learning-which-compounds-to-measure-next)
 - [Rich Features and Nested Cross-Validation](#rich-features-and-nested-cross-validation)
 - [Label Audit: Which Boiling Points Are Real Measurements?](#label-audit-which-boiling-points-are-real-measurements)
+- [Bayesian Optimisation: Finding Compounds That Meet a Spec](#bayesian-optimisation-finding-compounds-that-meet-a-spec)
 - [Conclusions & Future Work](#conclusions--future-work)
 - [License](#license)
 
 ## Introduction
 
-The project has four parts, each with its own notebook:
+The project has five parts, each with its own notebook:
 
 | Notebook | Question | Key result |
 |---|---|---|
@@ -34,6 +35,7 @@ The project has four parts, each with its own notebook:
 | [`Active_Learning.ipynb`](Active_Learning.ipynb) | Which compounds should be measured next? | Model-chosen labels reach random picking's accuracy with ~27–47% fewer labels. A feasibility-aware NIST round found 105 new boiling points in 302 lookups, against 3,553 for the hand-written rule. |
 | [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested, family-stratified CV gives ~16.4 K MAE (~33 K RMSE) on all labels. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
 | [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | 327 labels are Joback group-contribution estimates (identical to the formula to 0.01 K), which run 100–250 K too high for large molecules; 10 more are wrong or implausible. On the 1,251 measured labels the curated descriptors win clearly: **~10.7 K MAE**. |
+| [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) | How few experiments find the compounds that meet a spec? | For a 453–473 K window, BO (probability of meeting the spec, batches of 5) finds 69% of all in-spec compounds after measuring 12% of candidates: 5.4× random, better than every alternative in 20/20 seeds. |
 
 **Summary of results:**
 - **Original pipeline:** since all five architectures showed comparable validation performance (confirmed with a split-sensitivity analysis — repeating the comparison across many resampled splits), a simple-averaging **ensemble of Ridge, XGBoost, and a Neural Network** is used instead of a single "champion" model. On the original 60/20/20 split it scored an RMSE of ≈26 K, MAE ≈15 K and R² 0.95 on the held-out test set.
@@ -48,6 +50,7 @@ The project has four parts, each with its own notebook:
 ├── Active_Learning.ipynb           # which compounds to measure next: GP-driven active learning
 ├── Boiling_Point_RDKit.ipynb       # fresh start: curated RDKit descriptors, nested family-stratified CV
 ├── Label_Audit.ipynb               # which labels are measurements? audit + re-evaluation on measured labels
+├── Bayesian_Optimisation.ipynb     # batch BO campaigns to find compounds in a boiling-point spec window
 ├── src/boiling_point/              # reusable pipeline code
 │   ├── data.py                     # loading & merging datasets
 │   ├── features.py                 # SMILES feature engineering, feature/target selection
@@ -61,6 +64,7 @@ The project has four parts, each with its own notebook:
 │   ├── families.py                 # primary chemical family from RDKit substructure patterns
 │   ├── validation.py               # nested, family-stratified CV of modelling recipes
 │   ├── audit.py                    # label audit: Joback estimates, implausible hydrocarbons
+│   ├── bayes_opt.py                # spec-window BO: probability-in-spec and qLogEI batch acquisition
 │   └── nist_scraper.py             # NIST WebBook scraper for extending the dataset
 ├── scripts/
 │   ├── scrape_nist_boiling_points.py       # CLI entry point for the NIST scraper (heuristic rule)
@@ -70,6 +74,7 @@ The project has four parts, each with its own notebook:
 │   ├── evaluate_nist_additions.py          # do the added compounds improve the ensemble?
 │   ├── run_feature_study.py                # nested CV: old 12 vs curated RDKit features (--audited)
 │   ├── audit_labels.py                     # writes data/label_audit.csv
+│   ├── run_bo_campaign.py                  # BO campaigns vs baselines, 20 seeds
 │   └── build_pubchem_subset.py             # rebuild data/pubchem_subset.csv from the full download
 ├── tests/                          # unit tests for src/boiling_point
 ├── results/                       # simulation results (CSV) and exported plots (images/)
@@ -268,6 +273,28 @@ That leaves **1,251 measured labels**. Joback estimates are fairly accurate for 
 - **Cleaner training data helps on its own.** On the *same* measured compounds, the curated ensemble's MAE is 14.0 K when trained with the suspect labels and 10.8 K without them, despite ~20% less training data.
 - **The lesson:** the biggest single improvement in the project came from finding which labels were real, not from better models or features.
 
+## Bayesian Optimisation: Finding Compounds That Meet a Spec
+
+In formulation work the question is usually "which candidates meet the specification?", not "what's the maximum?". [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) sets up that problem:
+- **Spec:** a boiling point of **453–473 K** (180–200 °C). 151 of the 1,251 measured compounds are in spec, at molecular weights from 62 to 354, so no simple size rule finds them.
+- **Campaign:** each "experiment" reveals one measured boiling point. 10 random starting experiments, then **batches of 5**, up to 150 experiments, repeated over 20 seeds.
+- **Model:** a BoTorch `SingleTaskGP` on the curated RDKit descriptors.
+
+![BO campaign: in-spec compounds found vs experiments](results/images/bo_spec_window.png)
+
+| After 150 experiments (20 seeds) | In-spec found (of 151) | vs random |
+|---|---|---|
+| **BO: probability of meeting the spec** (batch built with the kriging-believer trick) | **103.6 ± 2.6** | **5.4×** |
+| Greedy GP (same model, no exploration) | 79.6 ± 6.3 | 4.2× |
+| BO: BoTorch qLogEI toward 463 K | 61.9 ± 10.9 | 3.2× |
+| Molecular-weight rule | 47.6 ± 8.2 | 2.5× |
+| Random | 19.1 ± 4.1 | 1.0× |
+
+- **Probability-in-spec BO wins in all 20 seeds.** It finds 69% of the in-spec compounds after measuring 12% of the candidates, about the work of ~850 random experiments.
+- **Exploration is worth ~24 compounds:** the greedy GP uses the same model but ignores uncertainty.
+- **The acquisition must match the goal.** qLogEI toward the target is fastest at first, then stalls: it chases ever-closer matches to 463 K instead of collecting everything inside the window.
+- **Blind spot:** BO rarely finds in-spec compounds in a *different* region of chemical space from those already found, here small diols (ethylene glycol, propylene glycol), which boil like molecules twice their size.
+
 ## Conclusions & Future Work
 
 1. Five classic ML models were evaluated for predicting chemical compound boiling points on a dataset of 1,588 entries. Model performance was found to be sensitive to the train/validation/test split, given the modest dataset size — collecting more data is recommended as a follow-up. Since no single architecture was reliably better than the others, a simple-averaging ensemble of Ridge, XGBoost, and a Neural Network is used instead of a single champion model.
@@ -278,6 +305,7 @@ That leaves **1,251 measured labels**. Joback estimates are fairly accurate for 
 6. Real NIST collection rounds show that active learning in the real world must model feasibility: uncertainty alone chose compounds that decompose before boiling (0.5% hit rate), while weighting by a learned chance of success found 105 new boiling points in 302 lookups (35%). The model-chosen compounds covered chemistry the literature data lacks entirely (halogenated molecules), cutting error there from ~82 K to ~23 K. A benchmark drawn from the original data can't show that kind of gain, so the acquisition target should match the population the model will be used on.
 7. Redoing the modelling with nested, family-stratified CV and MAE-based selection gives ~16.4 K MAE (~33 K RMSE) on all labels. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds.
 8. A label audit found that 327 labels (21%) are Joback group-contribution estimates, not measurements, and 10 more are wrong or implausible. On the 1,251 measured labels, the curated descriptors win clearly (ensemble MAE 10.8 vs 12.9 K, 15/15 folds), and training without the suspect labels improves accuracy on the same compounds by ~3 K MAE. For future work on this dataset, start from `data/label_audit.csv`.
+9. Bayesian optimisation turns the model into an experiment planner. Choosing batches by the probability of meeting a boiling-point spec finds 69% of the in-spec compounds after measuring 12% of the candidates (5.4× random). Using the model without its uncertainty, or with an acquisition aimed at a single target value, finds far fewer.
 
 ## License
 
