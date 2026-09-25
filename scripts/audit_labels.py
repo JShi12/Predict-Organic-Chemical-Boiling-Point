@@ -30,7 +30,7 @@ KNOWN_ERRORS = {
 
 def main():
     literature = data.build_modelling_table(
-        data.load_literature_data("compound_boiling_points_from_literature.xlsx"), data.load_pubchem_data())
+        data.load_literature_data("data/compound_boiling_points_from_literature.xlsx"), data.load_pubchem_data())
     table = audit.build_label_audit(literature, pd.read_csv(NIST_LOOKUPS_CSV), KNOWN_ERRORS)
     table.to_csv(AUDIT_CSV, index=False)
     excluded = table["exclude"].sum()

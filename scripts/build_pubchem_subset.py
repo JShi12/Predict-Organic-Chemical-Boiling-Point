@@ -1,6 +1,6 @@
 """Build data/pubchem_subset.csv: every PubChem row this project uses.
 
-The full PubChem download (compound_property_from_PubChem.csv, ~77 MB) is
+The full PubChem download (data/compound_property_from_PubChem.csv, ~77 MB) is
 too large to commit. Every notebook and script only needs:
 - rows for compounds with a boiling point (literature + all NIST files), and
 - rows passing the NIST-likely-name filter (the candidate pools of the
@@ -22,16 +22,16 @@ import pandas as pd  # noqa: E402
 from boiling_point import data, nist_scraper  # noqa: E402
 
 LABEL_FILES = [
-    "compound_boiling_points_from_nist.csv",
-    "nist_boiling_points_targeted.csv",
-    "nist_boiling_points_uncertainty_only.csv",
-    "nist_boiling_points_feasibility_aware.csv",
+    "data/compound_boiling_points_from_nist.csv",
+    "data/nist_boiling_points_targeted.csv",
+    "data/nist_boiling_points_uncertainty_only.csv",
+    "data/nist_boiling_points_feasibility_aware.csv",
 ]
 
 
 def main():
     full = pd.read_csv(data.PUBCHEM_FULL_PATH)
-    names = set(data.load_literature_data("compound_boiling_points_from_literature.xlsx")["cmpdname"])
+    names = set(data.load_literature_data("data/compound_boiling_points_from_literature.xlsx")["cmpdname"])
     for path in LABEL_FILES:
         names |= set(pd.read_csv(path)["cmpdname"])
     candidates = nist_scraper.select_nist_likely_candidates(full, already_have_names=set())

@@ -45,9 +45,9 @@ PER_FAMILY_MIN = 100
 def load_study_data(audited: bool = False):
     """Literature compounds (minus EXCLUDED, or minus every label the audit
     excludes if audited) with family, hard-region flag, and the feature sets."""
-    pubchem = data.load_pubchem_data("compound_property_from_PubChem.csv")
+    pubchem = data.load_pubchem_data("data/compound_property_from_PubChem.csv")
     literature = data.build_modelling_table(
-        data.load_literature_data("compound_boiling_points_from_literature.xlsx"), pubchem)
+        data.load_literature_data("data/compound_boiling_points_from_literature.xlsx"), pubchem)
     missing = set(EXCLUDED) - set(literature["cmpdname"])
     assert not missing, f"excluded compounds not found: {missing}"
     excluded = set(EXCLUDED)

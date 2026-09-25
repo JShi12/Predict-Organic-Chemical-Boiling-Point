@@ -12,7 +12,7 @@ PUBCHEM_COLUMNS = [
 
 # The full PubChem download (~77 MB, not committed) and the committed subset
 # of the rows this project uses (built by scripts/build_pubchem_subset.py).
-PUBCHEM_FULL_PATH = "compound_property_from_PubChem.csv"
+PUBCHEM_FULL_PATH = "data/compound_property_from_PubChem.csv"
 PUBCHEM_SUBSET_PATH = str(Path(__file__).resolve().parents[2] / "data" / "pubchem_subset.csv")
 
 

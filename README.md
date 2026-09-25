@@ -88,9 +88,9 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 
 ## Data
 
-- **Literature boiling points:** [`compound_boiling_points_from_literature.xlsx`](compound_boiling_points_from_literature.xlsx), from a [J. Chem. Educ. article](https://pubs.acs.org/doi/10.1021/acs.jchemed.3c01040). 1,748 records, 1,588 after merging with PubChem on compound name. Part 4 shows 327 of them are estimates.
+- **Literature boiling points:** [`data/compound_boiling_points_from_literature.xlsx`](data/compound_boiling_points_from_literature.xlsx), from a [J. Chem. Educ. article](https://pubs.acs.org/doi/10.1021/acs.jchemed.3c01040). 1,748 records, 1,588 after merging with PubChem on compound name. Part 4 shows 327 of them are estimates.
 - **PubChem properties:** the full 77 MB download isn't committed. [`data/pubchem_subset.csv`](data/pubchem_subset.csv) (1.1 MB) holds every row the project uses, and the loader falls back to it automatically, with identical results. `scripts/build_pubchem_subset.py` rebuilds it from the full file.
-- **NIST WebBook lookups:** `nist_boiling_points_*.csv` hold the heuristic, uncertainty-only and feasibility-aware collection rounds. The scraper respects NIST's 5-second crawl delay and is not affiliated with NIST.
+- **NIST WebBook lookups:** `data/nist_boiling_points_*.csv` and `data/compound_boiling_points_from_nist.csv` hold the heuristic, uncertainty-only and feasibility-aware collection rounds. The scraper respects NIST's 5-second crawl delay and is not affiliated with NIST.
 
 ## Setup & usage
 
@@ -126,7 +126,7 @@ The notebooks load precomputed results. To regenerate them:
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
-├── data/                       # PubChem subset, label audit, NIST audit lookups
+├── data/                       # literature labels, NIST rounds, PubChem subset, label audit
 └── results/                    # precomputed results (CSV) and figures (images/)
 ```
 

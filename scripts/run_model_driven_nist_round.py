@@ -13,7 +13,7 @@ free to look outside the region the rule chose.
 --acquisition uncertainty (the first attempt, kept for the record) ranks by
 uncertainty alone. It mostly picked large drug/dye-like molecules that
 decompose before boiling, so NIST has no value: 4 hits in 811 lookups
-(nist_boiling_points_uncertainty_only.csv).
+(data/nist_boiling_points_uncertainty_only.csv).
 --acquisition feasibility_weighted ranks by bootstrap uncertainty x the
 predicted chance that a lookup succeeds. That chance comes from a classifier
 trained on every recorded lookup outcome and refit each round with the new
@@ -33,7 +33,7 @@ at a time; reruns resume from it.
 
 Usage:
     python scripts/run_model_driven_nist_round.py --acquisition feasibility_weighted \
-        --output nist_boiling_points_feasibility_aware.csv
+        --output data/nist_boiling_points_feasibility_aware.csv
     python scripts/run_model_driven_nist_round.py --max-lookups 5 --output /tmp/dry_run.csv  # dry run
 """
 import argparse
@@ -49,16 +49,16 @@ import pandas as pd  # noqa: E402
 
 from boiling_point import active_learning, data, features, nist_scraper  # noqa: E402
 
-CACHE_CSV = "nist_boiling_points_targeted.csv"
+CACHE_CSV = "data/nist_boiling_points_targeted.csv"
 # Every file of recorded lookup outcomes: reused as a cache, and used to
 # train the feasibility classifier.
-OUTCOME_CSVS = [CACHE_CSV, "nist_boiling_points_uncertainty_only.csv"]
+OUTCOME_CSVS = [CACHE_CSV, "data/nist_boiling_points_uncertainty_only.csv"]
 FIELDS = nist_scraper.CSV_FIELDS + ["round", "rank_in_round", "source"]
 
 
 def load_pools():
-    literature = data.load_literature_data("compound_boiling_points_from_literature.xlsx")
-    pubchem = data.load_pubchem_data("compound_property_from_PubChem.csv")
+    literature = data.load_literature_data("data/compound_boiling_points_from_literature.xlsx")
+    pubchem = data.load_pubchem_data("data/compound_property_from_PubChem.csv")
     labelled = data.build_modelling_table(literature, pubchem)
     candidates = nist_scraper.select_nist_likely_candidates(pubchem, set(literature["cmpdname"]))
     candidates = features.add_smiles_features(candidates.reset_index(drop=True))
@@ -67,7 +67,7 @@ def load_pools():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--output", default="nist_boiling_points_model_driven.csv")
+    parser.add_argument("--output", default="data/nist_boiling_points_model_driven.csv")
     parser.add_argument("--batch-size", type=int, default=100)
     parser.add_argument("--target-hits", type=int, default=105)
     parser.add_argument("--max-lookups", type=int, default=3000)

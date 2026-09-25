@@ -18,14 +18,14 @@ sys.path.insert(0, "src")
 
 from boiling_point import data, nist_scraper  # noqa: E402
 
-DEFAULT_OUTPUT = "nist_boiling_points_targeted.csv"
+DEFAULT_OUTPUT = "data/nist_boiling_points_targeted.csv"
 
 
 def main():
     output_path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_OUTPUT
 
-    df1 = data.load_literature_data("compound_boiling_points_from_literature.xlsx")
-    df2 = data.load_pubchem_data("compound_property_from_PubChem.csv")
+    df1 = data.load_literature_data("data/compound_boiling_points_from_literature.xlsx")
+    df2 = data.load_pubchem_data("data/compound_property_from_PubChem.csv")
     already_have = set(df1["cmpdname"])
 
     candidates = nist_scraper.select_targeted_candidates(df2, already_have)

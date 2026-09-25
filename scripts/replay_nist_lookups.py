@@ -2,7 +2,7 @@
 
 The heuristic run (scripts/scrape_nist_boiling_points.py) looked up all
 5,400 hard-region candidates and found boiling points for 105. Because
-every outcome is recorded in nist_boiling_points_targeted.csv, we can ask
+every outcome is recorded in data/nist_boiling_points_targeted.csv, we can ask
 how many of those lookups each ordering would have needed to collect the
 same hits:
 
@@ -31,7 +31,7 @@ from joblib import Parallel, delayed  # noqa: E402
 
 from boiling_point import active_learning, data, features, nist_scraper  # noqa: E402
 
-OUTCOMES_CSV = "nist_boiling_points_targeted.csv"
+OUTCOMES_CSV = "data/nist_boiling_points_targeted.csv"
 RESULTS_CSV = "results/nist_lookup_replay.csv"
 FIGURE = "results/images/nist_lookup_replay.png"
 BATCH = 100
@@ -39,8 +39,8 @@ MODEL_ORDERS = ("uncertainty", "feasibility", "feasibility_weighted")
 
 
 def load():
-    literature = data.load_literature_data("compound_boiling_points_from_literature.xlsx")
-    pubchem = data.load_pubchem_data("compound_property_from_PubChem.csv")
+    literature = data.load_literature_data("data/compound_boiling_points_from_literature.xlsx")
+    pubchem = data.load_pubchem_data("data/compound_property_from_PubChem.csv")
     labelled = data.build_modelling_table(literature, pubchem)
     outcomes = pd.read_csv(OUTCOMES_CSV)
     candidates = nist_scraper.select_nist_likely_candidates(pubchem, set(literature["cmpdname"]))
