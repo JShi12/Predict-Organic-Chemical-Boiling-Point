@@ -135,6 +135,8 @@ dmypy.json
 .idea
 data/*
 !data/pubchem_subset.csv
+!data/label_audit.csv
+!data/nist_audit_lookups.csv
 depricated/
 *.pkl
 
