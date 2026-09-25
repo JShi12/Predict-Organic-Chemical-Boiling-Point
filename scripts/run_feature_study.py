@@ -7,8 +7,14 @@ models, with hyperparameters tuned inside each outer training fold. Then
 fits the final model: the recipe with the lowest mean outer-fold MAE (RMSE
 is reported too), tuned and fitted on all compounds.
 
+--audited repeats the study on measured labels only: it leaves out every
+compound that data/label_audit.csv (scripts/audit_labels.py) marks as
+excluded (Joback estimates, implausible or NIST-contradicted labels, known
+data-entry errors) and writes to results/feature_study_audited/.
+
 Usage:
     python scripts/run_feature_study.py [--n-jobs -1]
+    python scripts/run_feature_study.py --audited
     python scripts/run_feature_study.py --smoke   # 2 folds x 1 repeat, tiny search, temp dir
 """
 import argparse
@@ -28,21 +34,27 @@ from joblib import Parallel, delayed  # noqa: E402
 from boiling_point import data, descriptors, families, features, validation  # noqa: E402
 
 OUT_DIR = "results/feature_study"
+AUDITED_OUT_DIR = "results/feature_study_audited"
+LABEL_AUDIT_CSV = "data/label_audit.csv"
 # Likely data-entry errors found by cross-referencing recurring outliers
 # (main notebook, Conclusions point 4): both ~90-100 K too low.
 EXCLUDED = ["2,6-Nonadien-1-ol", "N-Methyldodecylamine"]
 PER_FAMILY_MIN = 100
 
 
-def load_study_data():
-    """Literature compounds (minus EXCLUDED) with family, hard-region flag,
-    and the three feature sets."""
+def load_study_data(audited: bool = False):
+    """Literature compounds (minus EXCLUDED, or minus every label the audit
+    excludes if audited) with family, hard-region flag, and the feature sets."""
     pubchem = data.load_pubchem_data("compound_property_from_PubChem.csv")
     literature = data.build_modelling_table(
         data.load_literature_data("compound_boiling_points_from_literature.xlsx"), pubchem)
     missing = set(EXCLUDED) - set(literature["cmpdname"])
     assert not missing, f"excluded compounds not found: {missing}"
-    df = literature[~literature["cmpdname"].isin(EXCLUDED)].reset_index(drop=True)
+    excluded = set(EXCLUDED)
+    if audited:
+        audit = pd.read_csv(LABEL_AUDIT_CSV)
+        excluded |= set(audit.loc[audit["exclude"], "cmpdname"])
+    df = literature[~literature["cmpdname"].isin(excluded)].reset_index(drop=True)
     df["family"] = families.assign_families(df["isosmiles"]).to_numpy()
     df["hard_region"] = features.in_hard_region(df).to_numpy()
 
@@ -63,12 +75,13 @@ def main():
     parser.add_argument("--n-jobs", type=int, default=-1)
     parser.add_argument("--n-iter", type=int, default=25)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--audited", action="store_true", help="measured labels only (see data/label_audit.csv)")
     args = parser.parse_args()
     n_splits, n_repeats, n_iter = (2, 1, 2) if args.smoke else (5, 3, args.n_iter)
-    out_dir = tempfile.mkdtemp() if args.smoke else OUT_DIR
+    out_dir = tempfile.mkdtemp() if args.smoke else (AUDITED_OUT_DIR if args.audited else OUT_DIR)
     os.makedirs(out_dir, exist_ok=True)
 
-    df, feature_sets = load_study_data()
+    df, feature_sets = load_study_data(audited=args.audited)
     strat = validation.stratification_labels(df["family"], n_splits)
     print(f"{len(df)} compounds; families: {df['family'].value_counts().to_dict()}")
     splits = validation.outer_splits(strat, n_splits, n_repeats)
