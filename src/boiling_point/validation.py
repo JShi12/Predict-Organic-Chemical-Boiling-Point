@@ -90,12 +90,45 @@ def _rmse(y, p):
     return float(np.sqrt(np.mean((np.asarray(y) - np.asarray(p)) ** 2)))
 
 
-def _tune(model, X, y, strat, n_inner, n_iter, random_state, scoring=SELECTION_SCORING):
+class Tuned:
+    """Result of tuning: the refitted estimator, its parameters, and how
+    many better-ranked candidates failed to refit (see refit_best)."""
+
+    def __init__(self, best_estimator_, best_params_, refit_fallbacks: int = 0):
+        self.best_estimator_ = best_estimator_
+        self.best_params_ = best_params_
+        self.refit_fallbacks = refit_fallbacks
+
+    def predict(self, X):
+        return self.best_estimator_.predict(X)
+
+
+def refit_best(estimator, cv_results: dict, X, y) -> Tuned:
+    """Refit candidates in order of their CV rank until one fits. A
+    candidate can score well in CV and still diverge when refitted on the
+    full training data (e.g. an MLP with SGD and a large learning rate);
+    falling back to the next-best keeps the search from failing. When the
+    top candidate refits fine this is identical to scikit-learn's refit."""
+    order = np.argsort(cv_results["rank_test_score"], kind="stable")
+    for attempt, i in enumerate(order):
+        params = cv_results["params"][i]
+        if not np.isfinite(cv_results["mean_test_score"][i]):
+            continue
+        try:
+            fitted = clone(estimator).set_params(**params).fit(X, y)
+        except (ValueError, FloatingPointError):
+            continue
+        return Tuned(fitted, params, refit_fallbacks=attempt)
+    raise ValueError("no candidate could be refitted on the full training data")
+
+
+def _tune(model, X, y, strat, n_inner, n_iter, random_state, scoring=SELECTION_SCORING) -> Tuned:
     search = make_search(model, _inner_cv(strat, n_inner, random_state), n_iter, random_state, scoring)
+    search.set_params(refit=False)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ConvergenceWarning)
         search.fit(X, y)
-    return search
+        return refit_best(search.estimator, search.cv_results_, X, y)
 
 
 def run_outer_fold(X, y, strat, families, train_idx, test_idx, feature_set: str, repeat: int, fold: int,
@@ -118,7 +151,8 @@ def run_outer_fold(X, y, strat, families, train_idx, test_idx, feature_set: str,
         search = _tune(model, X_tr, y_tr, strat[train_idx], n_inner, n_iter, random_state)
         preds[model] = search.predict(X_te)
         train_preds[model] = search.predict(X_tr)
-        fold_rows.append({"model": model, "params": json.dumps(search.best_params_, default=str)})
+        fold_rows.append({"model": model, "params": json.dumps(search.best_params_, default=str),
+                          "refit_fallbacks": search.refit_fallbacks})
     preds[ENSEMBLE] = np.mean([preds[m] for m in BASE_MODELS], axis=0)
     train_preds[ENSEMBLE] = np.mean([train_preds[m] for m in BASE_MODELS], axis=0)
     fold_rows.append({"model": ENSEMBLE, "params": ""})
