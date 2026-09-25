@@ -21,7 +21,7 @@ from boiling_point import audit, data  # noqa: E402
 
 AUDIT_CSV = "data/label_audit.csv"
 NIST_LOOKUPS_CSV = "data/nist_audit_lookups.csv"
-# Found earlier by cross-referencing recurring outliers (Boiling_Point_Predicter.ipynb, Conclusions 4)
+# Found earlier by cross-referencing recurring outliers (Boiling_Point_Predictor.ipynb, Conclusions 4)
 KNOWN_ERRORS = {
     "2,6-Nonadien-1-ol": "PubChem (WHO/FAO JECFA) gives 469.15 K",
     "N-Methyldodecylamine": "a supplier gives 473.15 K",
