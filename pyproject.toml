@@ -1,3 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boiling-point"
+version = "1.0.0"
+description = "Boiling-point prediction from molecular structure: nested-CV model comparison, RDKit descriptors, a label audit, active learning and Bayesian optimisation."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+# Unpinned here; requirements.txt pins the exact versions behind the committed results.
+dependencies = [
+    "numpy", "pandas", "scipy", "scikit-learn", "xgboost", "joblib",
+    "matplotlib", "seaborn", "openpyxl",
+    "torch", "botorch", "gpytorch", "rdkit",
+    "requests", "beautifulsoup4", "nistchempy",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]

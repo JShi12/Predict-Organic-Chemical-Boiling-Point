@@ -12,18 +12,15 @@ Usage:
 """
 import argparse
 import os
-import sys
 import tempfile
 import time
 
-sys.path.insert(0, "src")
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
+from sklearn.model_selection import train_test_split
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from joblib import Parallel, delayed  # noqa: E402
-from sklearn.model_selection import train_test_split  # noqa: E402
-
-from boiling_point import active_learning, data, features, viz  # noqa: E402
+from boiling_point import active_learning, data, features, viz
 
 RESULTS_CSV = "results/active_learning_simulation.csv"
 PICKS_CSV = "results/active_learning_picks.csv"

@@ -14,9 +14,7 @@ Usage:
 """
 import sys
 
-sys.path.insert(0, "src")
-
-from boiling_point import data, nist_scraper  # noqa: E402
+from boiling_point import data, nist_scraper
 
 DEFAULT_OUTPUT = "data/nist_boiling_points_targeted.csv"
 

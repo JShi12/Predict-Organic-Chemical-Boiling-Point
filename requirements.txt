@@ -17,3 +17,6 @@ beautifulsoup4==4.15.0
 torch==2.14.0
 botorch==0.18.1
 rdkit==2026.3.6
+
+# This project's own package (src/boiling_point), installed in editable mode
+-e .

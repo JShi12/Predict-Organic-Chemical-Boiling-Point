@@ -17,7 +17,6 @@ import sys
 import tempfile
 import time
 
-sys.path.insert(0, "src")
 sys.path.insert(0, "scripts")
 
 import numpy as np  # noqa: E402

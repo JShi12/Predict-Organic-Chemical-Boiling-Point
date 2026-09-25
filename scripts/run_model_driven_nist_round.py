@@ -39,15 +39,12 @@ Usage:
 import argparse
 import csv
 import os
-import sys
 import time
 
-sys.path.insert(0, "src")
+import numpy as np
+import pandas as pd
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-
-from boiling_point import active_learning, data, features, nist_scraper  # noqa: E402
+from boiling_point import active_learning, data, features, nist_scraper
 
 CACHE_CSV = "data/nist_boiling_points_targeted.csv"
 # Every file of recorded lookup outcomes: reused as a cache, and used to

@@ -14,16 +14,13 @@ and tests on the other (3 random splits x both halves).
 Usage:
     python scripts/evaluate_nist_additions.py
 """
-import sys
 import warnings
 
-sys.path.insert(0, "src")
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from joblib import Parallel, delayed  # noqa: E402
-
-from boiling_point import active_learning, data, features, preprocessing  # noqa: E402
+from boiling_point import active_learning, data, features, preprocessing
 
 COMPARISON_CSV = "results/nist_additions_comparison.csv"
 HELDOUT_CSV = "results/nist_model_chosen_heldout.csv"

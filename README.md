@@ -98,7 +98,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
-pip install -r requirements.txt                        # pinned versions
+pip install -r requirements.txt                        # pinned versions + this package (editable)
 pytest tests/                                          # 78 tests
 jupyter notebook                                       # open any of the five notebooks
 ```
@@ -126,6 +126,7 @@ The notebooks load precomputed results. To regenerate them:
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
+├── pyproject.toml              # package metadata (pip install -e .) and pytest config
 ├── data/                       # literature labels, NIST rounds, PubChem subset, label audit
 └── results/                    # precomputed results (CSV) and figures (images/)
 ```
