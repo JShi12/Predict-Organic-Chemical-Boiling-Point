@@ -1,6 +1,11 @@
 {
  "feature_set": "old 12",
  "model": "mlp",
+ "selected_by": "mean outer-fold MAE",
+ "rmse_winner": [
+  "old 12",
+  "mlp"
+ ],
  "params": {
   "mlp": {
    "regressor__model__solver": "adam",
@@ -8,10 +13,9 @@
    "regressor__model__learning_rate": "constant",
    "regressor__model__hidden_layer_sizes": [
     100,
-    50,
-    20
+    50
    ],
-   "regressor__model__alpha": 0.01,
+   "regressor__model__alpha": 0.0001,
    "regressor__model__activation": "relu"
   }
  }

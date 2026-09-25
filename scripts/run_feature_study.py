@@ -1,10 +1,11 @@
 """Nested, family-stratified CV of the rich-feature study (docs/rich_features_plan.md).
 
-Compares feature sets (the original 12, the curated RDKit set, and curated +
-family one-hot) across Ridge / XGBoost / MLP / their ensemble, plus per-family
-XGBoost models, with hyperparameters tuned inside each outer training fold.
-Then fits the final model: the recipe with the lowest mean outer-fold RMSE,
-tuned and fitted on all compounds.
+Compares feature sets (the original 12, the curated RDKit set as-is and with
+log-transformed size/shape descriptors, and the log version + family one-hot)
+across Ridge / XGBoost / MLP / their ensemble, plus per-family XGBoost
+models, with hyperparameters tuned inside each outer training fold. Then
+fits the final model: the recipe with the lowest mean outer-fold MAE (RMSE
+is reported too), tuned and fitted on all compounds.
 
 Usage:
     python scripts/run_feature_study.py [--n-jobs -1]
@@ -46,11 +47,13 @@ def load_study_data():
     df["hard_region"] = features.in_hard_region(df).to_numpy()
 
     curated = descriptors.curated_descriptors(df["isosmiles"])
+    curated_log = descriptors.log_size_shape(curated)
     family_onehot = pd.get_dummies(df["family"], prefix="family", dtype=float)
     feature_sets = {
         "old 12": df[features.MODEL_FEATURE_COLUMNS].astype(float),
         "curated": curated,
-        "curated + family": pd.concat([curated, family_onehot], axis=1),
+        "curated (log)": curated_log,
+        "curated (log) + family": pd.concat([curated_log, family_onehot], axis=1),
     }
     return df, feature_sets
 
@@ -76,7 +79,7 @@ def main():
         delayed(validation.run_outer_fold)(
             feature_sets[name].to_numpy(dtype=float), df["boiling_point_kelvin"].to_numpy(),
             strat, df["family"].to_numpy(), train_idx, test_idx, name, repeat, fold,
-            n_iter=n_iter, per_family_min=PER_FAMILY_MIN if name == "curated" else None)
+            n_iter=n_iter, per_family_min=PER_FAMILY_MIN if name == "curated (log)" else None)
         for name, (repeat, fold, train_idx, test_idx) in jobs)
     print(f"nested CV: {time.time() - start:.0f}s")
 
@@ -94,15 +97,19 @@ def main():
     print(summary.to_string())
 
     global_recipes = metrics[metrics["model"].isin(validation.BASE_MODELS + (validation.ENSEMBLE,))]
-    best = global_recipes.groupby(["feature_set", "model"])["rmse"].mean().idxmin()
-    print(f"winning recipe: {best}; fitting the final model on all {len(df)} compounds")
+    means = global_recipes.groupby(["feature_set", "model"])[["mae", "rmse"]].mean()
+    best = means["mae"].idxmin()
+    rmse_best = means["rmse"].idxmin()
+    print(f"winning recipe by MAE: {best}; by RMSE it would be {rmse_best}")
+    print(f"fitting the final model on all {len(df)} compounds")
     final, params = validation.fit_final_model(
         best[1], feature_sets[best[0]].to_numpy(dtype=float), df["boiling_point_kelvin"].to_numpy(),
         strat, n_inner=n_splits, n_iter=n_iter)
     joblib.dump({"model": final, "feature_set": best[0], "model_type": best[1],
                  "feature_columns": list(feature_sets[best[0]].columns)}, f"{out_dir}/final_model.joblib")
     with open(f"{out_dir}/final_model.json", "w") as f:
-        json.dump({"feature_set": best[0], "model": best[1], "params": params}, f, indent=1, default=str)
+        json.dump({"feature_set": best[0], "model": best[1], "selected_by": "mean outer-fold MAE",
+                   "rmse_winner": list(rmse_best), "params": params}, f, indent=1, default=str)
     print(f"results written to {out_dir}")
 
 
