@@ -21,15 +21,12 @@ Usage:
     python scripts/replay_nist_lookups.py [--seeds 5] [--n-jobs -1]
 """
 import argparse
-import sys
 
-sys.path.insert(0, "src")
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from joblib import Parallel, delayed  # noqa: E402
-
-from boiling_point import active_learning, data, features, nist_scraper  # noqa: E402
+from boiling_point import active_learning, data, features, nist_scraper
 
 OUTCOMES_CSV = "data/nist_boiling_points_targeted.csv"
 RESULTS_CSV = "results/nist_lookup_replay.csv"

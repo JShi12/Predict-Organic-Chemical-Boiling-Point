@@ -20,18 +20,15 @@ Usage:
 import argparse
 import json
 import os
-import sys
 import tempfile
 import time
 
-sys.path.insert(0, "src")
+import joblib
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
 
-import joblib  # noqa: E402
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from joblib import Parallel, delayed  # noqa: E402
-
-from boiling_point import data, descriptors, families, features, validation  # noqa: E402
+from boiling_point import data, descriptors, families, features, validation
 
 OUT_DIR = "results/feature_study"
 AUDITED_OUT_DIR = "results/feature_study_audited"

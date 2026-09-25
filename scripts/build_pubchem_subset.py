@@ -13,13 +13,10 @@ is missing.
 Usage (needs the full file at the repo root):
     python scripts/build_pubchem_subset.py
 """
-import sys
 
-sys.path.insert(0, "src")
+import pandas as pd
 
-import pandas as pd  # noqa: E402
-
-from boiling_point import data, nist_scraper  # noqa: E402
+from boiling_point import data, nist_scraper
 
 LABEL_FILES = [
     "data/compound_boiling_points_from_nist.csv",

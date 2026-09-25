@@ -11,13 +11,10 @@ out of the measured-labels version of the feature study
 Usage:
     python scripts/audit_labels.py
 """
-import sys
 
-sys.path.insert(0, "src")
+import pandas as pd
 
-import pandas as pd  # noqa: E402
-
-from boiling_point import audit, data  # noqa: E402
+from boiling_point import audit, data
 
 AUDIT_CSV = "data/label_audit.csv"
 NIST_LOOKUPS_CSV = "data/nist_audit_lookups.csv"
