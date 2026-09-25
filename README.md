@@ -19,7 +19,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 | 1. [`Boiling_Point_Predictor.ipynb`](Boiling_Point_Predictor.ipynb) | Which classic model predicts boiling point best? | Five architectures perform comparably, so a Ridge + XGBoost + neural-network ensemble is used. |
 | 2. [`Active_Learning.ipynb`](Active_Learning.ipynb) | Which compounds should be measured next? | Model-chosen labels match random picking's accuracy with ~27–47% fewer labels. A feasibility-aware NIST round found 105 new boiling points in 302 lookups, against 3,553 for a hand-written rule. |
 | 3. [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested CV shows the original single-split result (26 K RMSE) was an easy split. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
-| 4. [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | 327 of 1,588 labels are group-contribution *estimates*, 100–250 K too high for large molecules; 10 more are wrong. On the 1,251 measured labels, curated descriptors win clearly: **~10.7 K MAE**. |
+| 4. [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | Of 1,588 labels, 327 are Joback estimates rather than measurements. 58 involve >20 heavy atoms, where Joback shows substantial positive bias in our dataset, and 10 more fail independent checks (measured values, supplier data, or physical plausibility). On the 1,251 measured labels, curated descriptors achieve **~10.7 K MAE**. |
 | 5. [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) | How few experiments find the compounds that meet a spec? | For a 453–473 K window, batch BO finds 69% of in-spec compounds after 12% of the experiments: 5.4× random, better than every alternative in 20/20 seeds. |
 
 **What the project shows:**
@@ -34,7 +34,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 
 - **Setup:** Ridge, Random Forest, XGBoost, an MLP and SVR, tuned with `GridSearchCV` on 12 features. The features are PubChem properties (molecular weight, polar area, H-bond counts, rotatable bonds) plus atom and bond counts from the SMILES string.
 - **Model choice:** a split-sensitivity check (10 resampled splits) showed that no architecture is reliably best. So the final model is a simple-averaging **ensemble of Ridge, XGBoost and the MLP**, one per inductive bias.
-- **Results:** test RMSE 26.2 K (MAE 15.2 K, R² 0.95) on the original 60/20/20 split. Part 3 shows that split was unusually easy.
+- **Results:** test MAE 15.2 K (RMSE 26.2 K, R² 0.95) on the original 60/20/20 split. Part 3 shows that split was unusually easy.
 - **Feature importance:** molecular weight dominates (0.54 of XGBoost's importance), then oxygen count and H-bond donors. That matches the physics: dispersion forces scale with size, and hydrogen bonding adds on top.
 
 ## 2. Active learning: which compounds to measure next
