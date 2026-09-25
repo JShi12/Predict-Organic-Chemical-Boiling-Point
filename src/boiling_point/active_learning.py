@@ -308,7 +308,7 @@ def run_strategy(X, y, hard_mask, test_idx, pool_idx, strategy: str, seed: int,
             row = {
                 "seed": seed, "strategy": strategy, "n_labels": n_labels,
                 "rmse": _rmse(y[test_idx], pred),
-                "rmse_hard": _rmse(y[test_idx][hard_test], pred[hard_test]),
+                "rmse_hard": _rmse(y[test_idx][hard_test], pred[hard_test]) if hard_test.any() else np.nan,
                 "frac_hard_labelled": float(hard[labelled].mean()),
                 "selector_rmse": np.nan,
             }
