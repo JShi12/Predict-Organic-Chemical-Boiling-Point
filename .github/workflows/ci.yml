@@ -10,11 +10,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+          cache: pip          # reuse downloaded wheels (torch, RDKit) between runs
 
       - name: Install dependencies
         # CPU-only torch first, so requirements.txt doesn't pull ~2 GB of CUDA wheels
