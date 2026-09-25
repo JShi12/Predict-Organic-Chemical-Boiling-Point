@@ -150,3 +150,46 @@ def plot_lookup_replay(results: pd.DataFrame, ax=None):
     ax.legend(frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5))  # curves fill the plot area
     fig.tight_layout()
     return fig
+
+
+# Bayesian-optimisation strategies: the two BO acquisitions take the first
+# categorical slots, then the non-exploring baselines; random is neutral.
+BO_STYLES = {
+    "prob_in_spec": {"label": "BO: probability in spec", "color": "#2a78d6", "linestyle": "-"},
+    "qlogei_target": {"label": "BO: qLogEI toward target", "color": "#eb6834", "linestyle": "-"},
+    "greedy_gp": {"label": "Greedy GP (no exploration)", "color": "#1baf7a", "linestyle": "-"},
+    "mw_heuristic": {"label": "Molecular-weight rule", "color": "#eda100", "linestyle": "-"},
+    "random": {"label": "Random", "color": "#7a7a75", "linestyle": "--"},
+}
+
+
+def plot_bo_campaign(results: pd.DataFrame, n_in_spec: int, ax=None, title: str = None):
+    """Cumulative in-spec compounds found vs experiments, mean ± 1 std
+    across seeds, with the best possible (every experiment in spec) as a
+    dotted reference."""
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(9, 4.2))
+    else:
+        fig = ax.figure
+    summary = results.groupby(["strategy", "experiment"])["hits"].agg(["mean", "std"]).reset_index()
+    n_max = int(results["experiment"].max())
+    ax.plot([0, n_max], [0, min(n_max, n_in_spec)], color="#c9c8c2", linestyle=":", linewidth=1.5,
+            label="Every experiment in spec")
+    for strategy, style in BO_STYLES.items():
+        c = summary[summary["strategy"] == strategy]
+        if c.empty:
+            continue
+        ax.plot(c["experiment"], c["mean"], color=style["color"], linestyle=style["linestyle"],
+                linewidth=2, label=style["label"])
+        ax.fill_between(c["experiment"], c["mean"] - c["std"], c["mean"] + c["std"],
+                        color=style["color"], alpha=0.12, linewidth=0)
+    ax.set_xlabel("Experiments (boiling points measured)")
+    ax.set_ylabel("In-spec compounds found")
+    ax.set_title(title or "Finding compounds that meet a boiling-point spec")
+    ax.grid(True, color="#e4e3dd", linewidth=0.8)
+    ax.set_axisbelow(True)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    ax.legend(frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5))
+    fig.tight_layout()
+    return fig
