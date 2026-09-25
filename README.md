@@ -3,9 +3,9 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
 
-An end-to-end machine learning project for predicting the normal boiling point of organic compounds from molecular structure and physicochemical properties. The repository covers data collection, feature engineering, model comparison, ensemble regression, error analysis, targeted dataset expansion from the NIST Chemistry WebBook, active learning to decide which compounds to measure next, and a rigorous re-evaluation with curated RDKit descriptors and nested cross-validation.
+An end-to-end machine learning project for predicting the normal boiling point of organic compounds from molecular structure and physicochemical properties. The repository covers data collection, feature engineering, model comparison, ensemble regression, error analysis, targeted dataset expansion from the NIST Chemistry WebBook, active learning to decide which compounds to measure next, a rigorous re-evaluation with curated RDKit descriptors and nested cross-validation, and an audit of which boiling-point labels are real measurements.
 
-The benchmark uses 1,588 literature compounds and reports results in kelvin. The most reliable accuracy estimate comes from nested, family-stratified cross-validation: **about 16.5 K mean absolute error (≈32 K RMSE)**. The project is designed as a reproducible cheminformatics experiment, not as a substitute for experimental measurements.
+The benchmark uses 1,588 literature compounds and reports results in kelvin. An audit found that 327 of those labels are group-contribution *estimates* rather than measurements, plus a handful of wrong values. On the 1,251 measured labels, nested family-stratified cross-validation gives **about 10.7 K mean absolute error (≈22 K RMSE)**. The project is designed as a reproducible cheminformatics experiment, not as a substitute for experimental measurements.
 
 ![Predicted vs actual boiling point on the test set](results/images/predicted_vs_actual.png)
 
@@ -20,22 +20,25 @@ The benchmark uses 1,588 literature compounds and reports results in kelvin. The
 - [Feature Importance](#feature-importance)
 - [Active Learning: Which Compounds to Measure Next](#active-learning-which-compounds-to-measure-next)
 - [Rich Features and Nested Cross-Validation](#rich-features-and-nested-cross-validation)
+- [Label Audit: Which Boiling Points Are Real Measurements?](#label-audit-which-boiling-points-are-real-measurements)
 - [Conclusions & Future Work](#conclusions--future-work)
 - [License](#license)
 
 ## Introduction
 
-The project has three parts, each with its own notebook:
+The project has four parts, each with its own notebook:
 
 | Notebook | Question | Key result |
 |---|---|---|
 | [`Boiling_Point_Predicter.ipynb`](Boiling_Point_Predicter.ipynb) | Which classic model predicts boiling point best? | Five architectures perform comparably, so a Ridge + XGBoost + neural-network ensemble is used. Test RMSE ≈26 K, but on an unusually easy split (see part 3). |
 | [`Active_Learning.ipynb`](Active_Learning.ipynb) | Which compounds should be measured next? | Model-chosen labels reach random picking's accuracy with ~27–47% fewer labels. A feasibility-aware NIST round found 105 new boiling points in 302 lookups, against 3,553 for the hand-written rule. |
-| [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested, family-stratified CV gives an honest ~16.5 K MAE (~32 K RMSE). Curated RDKit descriptors match or beat the original features on typical compounds but lose on ~20 giant molecules with probably extrapolated labels. |
+| [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested, family-stratified CV gives ~16.4 K MAE (~33 K RMSE) on all labels. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
+| [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | 327 labels are Joback group-contribution estimates (identical to the formula to 0.01 K), which run 100–250 K too high for large molecules; 10 more are wrong or implausible. On the 1,251 measured labels the curated descriptors win clearly: **~10.7 K MAE**. |
 
 **Summary of results:**
 - **Original pipeline:** since all five architectures showed comparable validation performance (confirmed with a split-sensitivity analysis — repeating the comparison across many resampled splits), a simple-averaging **ensemble of Ridge, XGBoost, and a Neural Network** is used instead of a single "champion" model. On the original 60/20/20 split it scored an RMSE of ≈26 K, MAE ≈15 K and R² 0.95 on the held-out test set.
-- **Re-evaluation:** repeated, family-stratified cross-validation with tuning inside each fold later showed that split was unusually easy. The same kind of ensemble scores ≈32 K RMSE (≈17 K MAE) averaged over 15 folds, and that is the figure to quote.
+- **Re-evaluation:** repeated, family-stratified cross-validation with tuning inside each fold later showed that split was unusually easy: the same kind of ensemble scores ≈32 K RMSE (≈17 K MAE) averaged over 15 folds.
+- **Label audit:** a fifth of the labels turned out to be estimates. With them removed, curated RDKit descriptors and an ensemble reach **≈10.7 K MAE (≈22 K RMSE)** on measured boiling points, and that is the figure to quote.
 
 ## Project Structure
 
@@ -44,6 +47,7 @@ The project has three parts, each with its own notebook:
 ├── Boiling_Point_Predicter.ipynb   # main analysis notebook (narrative + EDA)
 ├── Active_Learning.ipynb           # which compounds to measure next: GP-driven active learning
 ├── Boiling_Point_RDKit.ipynb       # fresh start: curated RDKit descriptors, nested family-stratified CV
+├── Label_Audit.ipynb               # which labels are measurements? audit + re-evaluation on measured labels
 ├── src/boiling_point/              # reusable pipeline code
 │   ├── data.py                     # loading & merging datasets
 │   ├── features.py                 # SMILES feature engineering, feature/target selection
@@ -56,6 +60,7 @@ The project has three parts, each with its own notebook:
 │   ├── descriptors.py              # curated RDKit descriptors grouped by intermolecular force
 │   ├── families.py                 # primary chemical family from RDKit substructure patterns
 │   ├── validation.py               # nested, family-stratified CV of modelling recipes
+│   ├── audit.py                    # label audit: Joback estimates, implausible hydrocarbons
 │   └── nist_scraper.py             # NIST WebBook scraper for extending the dataset
 ├── scripts/
 │   ├── scrape_nist_boiling_points.py       # CLI entry point for the NIST scraper (heuristic rule)
@@ -63,12 +68,14 @@ The project has three parts, each with its own notebook:
 │   ├── run_model_driven_nist_round.py      # real NIST rounds with model-chosen compounds
 │   ├── replay_nist_lookups.py              # replay the heuristic run's lookups in other orders
 │   ├── evaluate_nist_additions.py          # do the added compounds improve the ensemble?
-│   ├── run_feature_study.py                # nested CV: old 12 vs curated RDKit features
+│   ├── run_feature_study.py                # nested CV: old 12 vs curated RDKit features (--audited)
+│   ├── audit_labels.py                     # writes data/label_audit.csv
 │   └── build_pubchem_subset.py             # rebuild data/pubchem_subset.csv from the full download
 ├── tests/                          # unit tests for src/boiling_point
 ├── results/                       # simulation results (CSV) and exported plots (images/)
 ├── compound_boiling_points_from_literature.xlsx
 ├── data/pubchem_subset.csv       # every PubChem row the project uses (committed, 1.1 MB)
+├── data/label_audit.csv          # audit outcome per flagged label (+ nist_audit_lookups.csv)
 ├── compound_property_from_PubChem.csv   # full download, not committed (optional) — see Data below
 ├── requirements.txt
 ├── LICENSE
@@ -227,18 +234,39 @@ Reproduce with `python scripts/run_active_learning_simulation.py` (~10 min on 9 
 
 ![Outer-fold MAE and RMSE for each feature set and model](results/images/feature_study_folds.png)
 
-Paired comparison on the same 15 folds (feature set minus the original 12 features):
+Paired comparison on the same 15 folds (ensemble, feature set minus the original 12 features):
 
 | Ensemble (Ridge + XGBoost + MLP) | MAE change | RMSE change |
 |---|---|---|
-| Curated RDKit descriptors | **−0.7 K** (better in 13/15 folds) | +1.1 K (better in 5/15) |
-| Curated, log size/shape | −0.2 K | +2.6 K |
+| Curated RDKit descriptors | −0.4 K (better in 12/15 folds) | +1.8 K (better in 4/15) |
+| Curated, log size/shape | **−1.0 K** (better in 13/15 folds) | +1.3 K |
 
-- **The honest accuracy estimate is ~16.5 K MAE (~32 K RMSE).** The final model (original 12 features + MLP, chosen by MAE; RMSE agrees) is effectively tied with the curated ensemble (0.2 K MAE apart). It is tuned and fitted on all compounds.
-- **The curated descriptors are better on typical compounds but worse on the extremes.** By MAE they win for three of four families. Excluding ~20 giant molecules (e.g. a C₅₀ alkane listed at 1,343 K, a value that's probably extrapolated), they also win on RMSE (26.9 vs 28.2 K). Those few compounds are what make the RMSE comparison go the other way.
-- **Log-transforming size/shape descriptors didn't help.** It made the MLP worse and the giant molecules worse; only Ridge gained. The giants' problem is extrapolation, which compressing the features makes worse.
+- **~16.4 K MAE (~33 K RMSE) on all labels.** The final model (curated log descriptors + ensemble, chosen by MAE) is a near-tie with the original 12 features + MLP, which RMSE prefers.
+- **The curated descriptors win by MAE and for three of four families, but lose by RMSE.** The RMSE gap comes entirely from ~20 extreme compounds; without them the curated features are better (27.1 vs 28.1 K). The [label audit](#label-audit-which-boiling-points-are-real-measurements) shows these are mostly bad labels.
 - **The dataset is narrow.** It has only four acyclic families of C/H/N/O (alcohols, alkanes, alkenes/alkynes, amines), so many descriptors are constant. One global model beats per-family models, and adding the family as an input doesn't help.
 - **The richer features resolve most isomer ties:** from 224 groups sharing identical features down to 71, of which 64 are stereoisomers.
+- **A descriptor bug was caught and fixed:** `Kappa3` is undefined below 4 heavy atoms (RDKit returns −27 for methanol). Fixing it reversed an earlier conclusion that the log transform hurt.
+
+## Label Audit: Which Boiling Points Are Real Measurements?
+
+[`Label_Audit.ipynb`](Label_Audit.ipynb) checks every label without using model predictions as evidence:
+
+| Check | Flagged | Excluded |
+|---|---|---|
+| **Label identical to its Joback group-contribution estimate** (198.2 K + fixed amounts per group), to 0.01 K; fewer than one such match is expected by chance | 327 | 327 |
+| **Hydrocarbon more than 80 K below the n-alkane with the same carbon count** (99% sit within 40 K); likely reduced-pressure values | 7 | 7 |
+| **NIST WebBook value for compounds every model mispredicts** in the same direction: 3 labels contradicted (87–155 K too low), 1 confirmed, the rest not in NIST | 30 | 3 (2 already counted above) |
+| Data-entry errors found earlier | 2 | 2 |
+
+That leaves **1,251 measured labels**. Joback estimates are fairly accurate for small molecules but overshoot by 100–250 K beyond ~20 heavy atoms, exactly where the models kept "underpredicting".
+
+| On measured labels (nested CV, paired) | MAE | RMSE |
+|---|---|---|
+| Curated ensemble | **10.8 K** (vs 12.9 K for the original 12; better in 15/15 folds) | 22.5 K |
+| Best recipes | ~10.7 K | ~22 K |
+
+- **Cleaner training data helps on its own.** On the *same* measured compounds, the curated ensemble's MAE is 14.0 K when trained with the suspect labels and 10.8 K without them, despite ~20% less training data.
+- **The lesson:** the biggest single improvement in the project came from finding which labels were real, not from better models or features.
 
 ## Conclusions & Future Work
 
@@ -248,7 +276,8 @@ Paired comparison on the same 15 folds (feature set minus the original 12 featur
 4. Cross-referencing the recurring large-residual outlier compounds against independent sources surfaced likely data-entry errors of roughly 90–100 K in two of them, both understating boiling point: 2,6-Nonadien-1-ol (369.65 K here vs 469.15 K per PubChem's WHO/FAO JECFA citation) and N-Methyldodecylamine (382.15 K here vs 473.15 K per a commercial chemical supplier site). At least part of this dataset's hardest-to-predict cases may reflect mislabeled training data rather than genuine chemical difficulty — a full audit against primary sources is recommended alongside collecting more data.
 5. Active learning shows that choosing which compounds to label reaches the same accuracy with ~27–47% fewer labels than random picking, and that the hand-written hard-region rule captures most of that benefit. It also shows that hard-region error plateaus at ~50 K no matter how many of the existing compounds are labelled. This qualifies point 3: richer molecular descriptors and a label audit are likely to matter more than more compounds described by the same 12 features.
 6. Real NIST collection rounds show that active learning in the real world must model feasibility: uncertainty alone chose compounds that decompose before boiling (0.5% hit rate), while weighting by a learned chance of success found 105 new boiling points in 302 lookups (35%). The model-chosen compounds covered chemistry the literature data lacks entirely (halogenated molecules), cutting error there from ~82 K to ~23 K. A benchmark drawn from the original data can't show that kind of gain, so the acquisition target should match the population the model will be used on.
-7. Redoing the modelling with nested, family-stratified CV and MAE-based selection gives an honest ~16.5 K MAE (~32 K RMSE). Curated RDKit descriptors beat the original features on typical compounds (by MAE, and for three of four families) but lose on ~20 giant molecules with probably extrapolated labels. Log-transforming their size descriptors doesn't fix that. The next gains are more likely from auditing those extreme labels and testing on broader chemistry than from more descriptors.
+7. Redoing the modelling with nested, family-stratified CV and MAE-based selection gives ~16.4 K MAE (~33 K RMSE) on all labels. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds.
+8. A label audit found that 327 labels (21%) are Joback group-contribution estimates, not measurements, and 10 more are wrong or implausible. On the 1,251 measured labels, the curated descriptors win clearly (ensemble MAE 10.8 vs 12.9 K, 15/15 folds), and training without the suspect labels improves accuracy on the same compounds by ~3 K MAE. For future work on this dataset, start from `data/label_audit.csv`.
 
 ## License
 
