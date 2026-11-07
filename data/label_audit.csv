@@ -336,8 +336,8 @@ Phytane,442.65,"implausible hydrocarbon; model-flagged, unverified",174 K below 
 beta-Ocimene,346.15,"implausible hydrocarbon; model-flagged, unverified",101 K below the C10 n-alkane (447.3 K); no NIST boiling point,True
 "2,6-Nonadien-1-ol",369.65,known data-entry error,PubChem (WHO/FAO JECFA) gives 469.15 K,True
 N-Methyldodecylamine,382.15,known data-entry error,a supplier gives 473.15 K,True
+"(R,R)-2,3-butanediol",350.5,"model-flagged, unverified; stereoisomer conflict","no NIST boiling point; enantiomer (2S,3S)-butane-2,3-diol is 453.65 K (enantiomers boil at the same temperature); same structure: 2,3-Butanediol 455.15 K; meso-2,3-Butanediol 456.65 K; (R,R)-2,3-butanediol 350.50 K; (2S,3S)-butane-2,3-diol 453.65 K",True
 "3,9-Diethyl-6-tridecanol",582.15,NIST agrees,NIST 582.1 K,False
-"(R,R)-2,3-butanediol",350.5,"model-flagged, unverified",no NIST boiling point,False
 "1,2,3-Butanetriol",443.15,"model-flagged, unverified",no NIST boiling point,False
 "1,2-Heptanediol",363.15,"model-flagged, unverified",no NIST boiling point,False
 "1,8-Octanediol",418.15,"model-flagged, unverified",no NIST boiling point,False
@@ -356,3 +356,5 @@ Tridodecylamine,721.15,"model-flagged, unverified",no NIST boiling point,False
 Tris(2-aminoethyl)amine,370.65,"model-flagged, unverified",no NIST boiling point,False
 Tris(2-methylallyl)amine,357.15,"model-flagged, unverified",no NIST boiling point,False
 n-Methyloctan-1-amine,351.65,"model-flagged, unverified",no NIST boiling point,False
+"2-Butene-1,4-diol",404.15,"stereoisomer conflict, unverified","labels for the same structure differ by more than 30 K: 2-Butene-1,4-diol 404.15 K; cis-2-Butene-1,4-Diol 508.15 K; PubChem CID 8065 (2-butene-1,4-diol, stereo unspecified): 234 °C at 760 mmHg = 507.15 K (DOE PAC database); 141-149 °C at 20 mmHg (HSDB); this label is 103 K lower, near the reduced-pressure range",False
+"cis-2-Butene-1,4-Diol",508.15,"stereoisomer conflict, unverified","labels for the same structure differ by more than 30 K: 2-Butene-1,4-diol 404.15 K; cis-2-Butene-1,4-Diol 508.15 K; PubChem CID 8065 (2-butene-1,4-diol, stereo unspecified): 234 °C at 760 mmHg = 507.15 K (DOE PAC database); 141-149 °C at 20 mmHg (HSDB), which agrees with this label",False
