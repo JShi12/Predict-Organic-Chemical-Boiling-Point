@@ -30,3 +30,19 @@ Written by `scripts/build_representation_splits.py`; settings and seeds are in `
 
 Fold metrics from `scripts/compare_grouped_splits.py`; `splits` is `grouped` (structure-grouped folds) or
 `ungrouped` (the feature study's folds). Both use the same 1,250 labels.
+
+## `probes_invariance.csv` (label-free; one row per MoLFormer layer)
+
+| Column | Meaning |
+|---|---|
+| `layer` | `hidden_0` = token embeddings, `hidden_1`…`hidden_12` = encoder layers, `pooler` = the model's pooled output |
+| `retrieval_share` | Share of randomised-SMILES embeddings whose nearest canonical embedding (cosine) is their own molecule's |
+| `median_distance_ratio` | Median of (cosine distance canonical ↔ randomised spelling) / (distance to the nearest other molecule) |
+
+## `probes_chain_length.csv` (label-free; one row per homologous series × representation)
+
+| Column | Meaning |
+|---|---|
+| `spearman_distance_vs_length` | Spearman correlation between chain length and cosine distance from the series' shortest member |
+| `median_step_distance_upto_C8` / `_beyond_C8` | Median cosine distance between consecutive homologues, up to / beyond 8 carbons |
+| `share_steps_beyond_C8_unchanged` | Share of consecutive pairs beyond C8 with identical vectors (distance < 1e-9) |

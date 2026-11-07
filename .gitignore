@@ -146,3 +146,6 @@ data/compound_property_from_PubChem.csv
 docs/active_learning_plan.md
 docs/rich_features_plan.md
 docs/representation_study_plan.md
+
+# Embedding caches (rebuilt by scripts/build_representations.py)
+data/cache/

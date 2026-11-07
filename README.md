@@ -101,7 +101,7 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 95 tests
+pytest tests/                                          # 112 tests
 pip install -r requirements-lm.txt                     # optional: chemical-language-model study
 jupyter notebook                                       # open any of the five notebooks
 ```
@@ -118,6 +118,7 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/build_representation_splits.py` | representation study: fixed splits and NIST test set | seconds |
 | `scripts/lookup_noise_floor.py` | `data/nist_noise_floor_lookups.csv` (network, resumable) | ~20 min |
 | `scripts/compare_grouped_splits.py` | grouped vs ungrouped folds | ~6 min |
+| `scripts/build_representations.py` | MoLFormer embedding cache (`data/cache/`, not committed) and label-free probes; needs `requirements-lm.txt` | ~1.5 min |
 
 ## Project structure
 
@@ -129,7 +130,7 @@ The notebooks load precomputed results. To regenerate them:
 │   ├── descriptors.py, families.py, validation.py                                      # part 3
 │   ├── audit.py                                                                         # part 4
 │   ├── bayes_opt.py                                                                     # part 5
-│   ├── splits.py                                                                        # representation study
+│   ├── splits.py, representations.py                                                    # representation study
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
