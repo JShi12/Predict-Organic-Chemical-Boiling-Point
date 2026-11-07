@@ -17,6 +17,10 @@ dependencies = [
     "requests", "beautifulsoup4", "nistchempy",
 ]
 
+[project.optional-dependencies]
+# Chemical-language-model representations (requirements-lm.txt pins the versions)
+lm = ["transformers>=5.12", "safetensors", "huggingface_hub"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

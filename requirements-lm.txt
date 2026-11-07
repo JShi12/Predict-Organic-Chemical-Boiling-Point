@@ -1,0 +1,8 @@
+# Optional: the chemical-language-model part of the representation study.
+# Install after requirements.txt:  pip install -r requirements-lm.txt
+# Pinned to the versions behind the committed results. MoLFormer-XL's model card
+# says it was tested with transformers 5.12.1.
+transformers==5.12.1
+tokenizers==0.22.2
+huggingface_hub==1.33.0
+safetensors==0.8.0

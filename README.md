@@ -67,6 +67,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 - **Joback estimates are decent for small molecules but 100–250 K too high beyond ~20 heavy atoms.** Those were exactly the "extreme compounds" the models kept underpredicting.
 - **On the 1,251 measured labels, curated descriptors win clearly:** ensemble MAE 10.8 vs 12.9 K, better in 15/15 folds.
 - **On the same compounds, training without the suspect labels lowers MAE from 14.0 to 10.8 K,** even with ~20% less training data. The audit outcome for every flagged compound is in [`data/label_audit.csv`](data/label_audit.csv).
+- **Later addition (representation study):** a stereoisomer-consistency check also excludes (R,R)-2,3-butanediol. Its label, 350.5 K, contradicts its enantiomer's 453.65 K, and enantiomers boil at the same temperature. `data/label_audit.csv` therefore now lists 1,250 measured labels. Parts 3–5 report results on the 1,251 and were not re-run; re-running their scripts uses the 1,250, which also reassigns every cross-validation fold.
 
 ## 5. Bayesian optimisation: finding compounds that meet a spec
 
@@ -91,6 +92,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 - **Literature boiling points:** [`data/compound_boiling_points_from_literature.xlsx`](data/compound_boiling_points_from_literature.xlsx), from a [J. Chem. Educ. article](https://pubs.acs.org/doi/10.1021/acs.jchemed.3c01040). 1,748 records, 1,588 after merging with PubChem on compound name. Part 4 shows 327 of them are estimates.
 - **PubChem properties:** the full 77 MB download isn't committed. [`data/pubchem_subset.csv`](data/pubchem_subset.csv) (1.1 MB) holds every row the project uses, and the loader falls back to it automatically, with identical results. `scripts/build_pubchem_subset.py` rebuilds it from the full file.
 - **NIST WebBook lookups:** `data/nist_boiling_points_*.csv` and `data/compound_boiling_points_from_nist.csv` hold the heuristic, uncertainty-only and feasibility-aware collection rounds. The scraper respects NIST's 5-second crawl delay and is not affiliated with NIST.
+- **Noise-floor lookups:** [`data/nist_noise_floor_lookups.csv`](data/nist_noise_floor_lookups.csv) holds every NIST measurement for a random, family-stratified sample of 100 measured compounds, searched by InChI. Columns are described in [`data/COLUMNS.md`](data/COLUMNS.md).
 
 ## Setup & usage
 
@@ -99,7 +101,8 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 78 tests
+pytest tests/                                          # 95 tests
+pip install -r requirements-lm.txt                     # optional: chemical-language-model study
 jupyter notebook                                       # open any of the five notebooks
 ```
 
@@ -112,6 +115,9 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/run_feature_study.py [--audited]` | parts 3–4 nested CV | ~4 min each |
 | `scripts/audit_labels.py` | `data/label_audit.csv` | seconds |
 | `scripts/run_bo_campaign.py` | part 5 campaigns | ~3 min |
+| `scripts/build_representation_splits.py` | representation study: fixed splits and NIST test set | seconds |
+| `scripts/lookup_noise_floor.py` | `data/nist_noise_floor_lookups.csv` (network, resumable) | ~20 min |
+| `scripts/compare_grouped_splits.py` | grouped vs ungrouped folds | ~6 min |
 
 ## Project structure
 
@@ -123,12 +129,14 @@ The notebooks load precomputed results. To regenerate them:
 │   ├── descriptors.py, families.py, validation.py                                      # part 3
 │   ├── audit.py                                                                         # part 4
 │   ├── bayes_opt.py                                                                     # part 5
+│   ├── splits.py                                                                        # representation study
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
 ├── pyproject.toml              # package metadata (pip install -e .) and pytest config
 ├── data/                       # literature labels, NIST rounds, PubChem subset, label audit
-└── results/                    # precomputed results (CSV) and figures (images/)
+└── results/                    # precomputed results (CSV) and figures (images/);
+                                #   representation_study/ holds the study's fixed splits
 ```
 
 ## Next steps

@@ -1,0 +1,30 @@
+{
+ "n_splits": 5,
+ "n_repeats": 3,
+ "split_seed": 0,
+ "splitter": "StratifiedGroupKFold(shuffle=True, random_state=split_seed + repeat)",
+ "stratify": "family (families with < n_splits members merged into the largest, for splitting only)",
+ "group": "InChIKey connectivity block (ignores stereochemistry and isotopes)",
+ "holdout_families": [
+  "alkane",
+  "alkene/alkyne",
+  "alcohol/phenol",
+  "amine"
+ ],
+ "learning_curve": {
+  "sizes": [
+   100,
+   250,
+   500,
+   "full"
+  ],
+  "draws": 3,
+  "seed": 0,
+  "folds": "repeat 0",
+  "nested": true
+ },
+ "nist_min_subgroup": 30,
+ "n_literature": 1250,
+ "n_nist_rows": 213,
+ "n_nist_kept": 211
+}
