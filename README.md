@@ -21,6 +21,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 | 3. [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested CV shows the original single-split result (26 K RMSE) was an easy split. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
 | 4. [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | Of 1,588 labels, 327 are Joback estimates rather than measurements. 58 involve >20 heavy atoms, where Joback shows substantial positive bias in our dataset, and 10 more fail independent checks (measured values, supplier data, or physical plausibility). On the 1,251 measured labels, curated descriptors achieve **~10.7 K MAE**. |
 | 5. [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) | How few experiments find the compounds that meet a spec? | For a 453–473 K window, batch BO finds 69% of in-spec compounds after 12% of the experiments: 5.4× random, better than every alternative in 20/20 seeds. |
+| 6. [`Representation_Study.ipynb`](Representation_Study.ipynb) (in progress) | Do pretrained chemical-language-model embeddings beat conventional features? | Frozen MoLFormer matches the curated descriptors on familiar chemistry (MAE 11.43 vs 11.00 K) but is worse on unseen families (+9.67 K) and on unfamiliar NIST compounds (+128.7 K), where a linear readout extrapolates to impossible negative temperatures. Fine-tuning and learning curves are next. |
 
 **What the project shows:**
 - **Check the labels before comparing models.** The biggest improvement came from finding that a fifth of the labels were computed estimates, not from better features or models.
@@ -103,7 +104,7 @@ python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch n
 pip install -r requirements.txt                        # pinned versions + this package (editable)
 pytest tests/                                          # 122 tests
 pip install -r requirements-lm.txt                     # optional: chemical-language-model study
-jupyter notebook                                       # open any of the five notebooks
+jupyter notebook                                       # open any of the six notebooks
 ```
 
 The notebooks load precomputed results. To regenerate them:
@@ -124,7 +125,7 @@ The notebooks load precomputed results. To regenerate them:
 ## Project structure
 
 ```
-├── *.ipynb                     # the five notebooks (see Results at a glance)
+├── *.ipynb                     # the six notebooks (see Results at a glance)
 ├── src/boiling_point/          # reusable code
 │   ├── data.py, features.py, preprocessing.py, models.py, ensemble.py, evaluation.py   # part 1
 │   ├── active_learning.py, nist_scraper.py                                             # part 2
