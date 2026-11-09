@@ -161,12 +161,18 @@ def embed(smiles, model, tokenizer, batch_size: int = 64) -> np.ndarray:
 
 # --- cache -------------------------------------------------------------------
 
+def checked_config(n_random: int = 10, random_seed: int = 0) -> dict:
+    """The CHECKED_CONFIG_KEYS fields a cache must match. Needs no torch, so a
+    process that fits xgboost can validate the cache before loading it."""
+    return {"model_id": MOLFORMER_ID, "revision": MOLFORMER_REVISION, "code_sha256": MOLFORMER_CODE_SHA256,
+            "smiles_prep_version": SMILES_PREP_VERSION, "pooling": POOLING, "layers": LAYER_NAMES,
+            "n_random": n_random, "random_seed": random_seed}
+
+
 def cache_config(n_random: int, random_seed: int, device: str, n_threads: int) -> dict:
     import torch
     import transformers
-    return {"model_id": MOLFORMER_ID, "revision": MOLFORMER_REVISION, "code_sha256": MOLFORMER_CODE_SHA256,
-            "smiles_prep_version": SMILES_PREP_VERSION, "pooling": POOLING, "layers": LAYER_NAMES,
-            "n_random": n_random, "random_seed": random_seed, "device": device, "torch_threads": n_threads,
+    return {**checked_config(n_random, random_seed), "device": device, "torch_threads": n_threads,
             "torch": torch.__version__, "transformers": transformers.__version__,
             "created": datetime.date.today().isoformat()}
 

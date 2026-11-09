@@ -46,3 +46,20 @@ Fold metrics from `scripts/compare_grouped_splits.py`; `splits` is `grouped` (st
 | `spearman_distance_vs_length` | Spearman correlation between chain length and cosine distance from the series' shortest member |
 | `median_step_distance_upto_C8` / `_beyond_C8` | Median cosine distance between consecutive homologues, up to / beyond 8 carbons |
 | `share_steps_beyond_C8_unchanged` | Share of consecutive pairs beyond C8 with identical vectors (distance < 1e-9) |
+
+## `frozen/` (Step 3: frozen-representation comparison, `scripts/run_representation_study.py`)
+
+Files are prefixed `ridge_` (Stage A), `xgboost_` (Stage B) or `best_` (per task and representation, the
+regressor with the lower inner-CV MAE).
+
+| File / column | Meaning |
+|---|---|
+| `*_predictions.csv` | One row per held-out molecule × task × representation × regressor |
+| `regime`, `task` | `familiar` (`task` = `r{repeat}f{fold}`), `holdout` (`task` = held-out family), or `nist` |
+| `key` | `literature:<mol_id>` (row of `splits.csv`) or `nist:<row>` (row of `nist_external.csv`) |
+| `*_selection.csv` | Chosen configuration per task: `params` (JSON), MoLFormer `layer` (0–13, see `representations.LAYER_NAMES`), best inner-CV MAE, wall time |
+| `*_cvplus_test.csv.gz` | For CV+ intervals (Step 5): the chosen pipeline refitted on each inner fold, and its predictions for the task's test molecules |
+| `*_cvplus_residuals.csv.gz` | The same inner-fold models' out-of-fold residuals (`y_true − y_pred`) for the training molecules |
+| `layer_probe.csv` | Familiar regime, MoLFormer + Ridge: every layer's inner-CV and test MAE at its own inner-CV-best alpha (diagnostic only) |
+| `references.csv` | Training mean, molecular-weight-only Ridge, and (familiar only) the feature study's curated (log) + family ensemble |
+| `confirmatory_provisional.csv` | C1–C3: `estimate` = MAE(MoLFormer) − MAE(curated), best pipelines (positive = MoLFormer worse); raw p-values, before Holm |

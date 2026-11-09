@@ -1,0 +1,4 @@
+comparison,regime,estimate,se,ci_low,ci_high,p_raw,n_units,per_stratum,status
+C1,familiar,0.4324128572957079,0.6339892147241204,,,0.5063349513380943,15,,provisional: Holm and the 1.0 K rule applied once C4 and C5 exist
+C2,holdout,9.666734811401918,,8.39765943319265,10.946045539286251,0.0,1247,"{""alcohol/phenol"": 18.968838338844847, ""alkane"": -0.742120593167752, ""alkene/alkyne"": 18.171806878763203, ""amine"": 2.2684146211673744}",provisional: Holm and the 1.0 K rule applied once C4 and C5 exist
+C3,nist,128.6935400413316,,105.963807885067,152.70189820890843,0.0,211,"{""halogenated acyclic"": 40.784471597204686, ""other"": 34.416146432986814, ""ring-containing"": 310.8800020938033}",provisional: Holm and the 1.0 K rule applied once C4 and C5 exist
