@@ -80,3 +80,24 @@ split once (seed 0) into fitting, stopping (~7.5%) and calibration (~7.5%) rows,
 | `frozen_matched_predictions.csv` | Familiar folds: frozen MoLFormer + Ridge refitted on the same fitting rows (layer and alpha re-chosen in the inner CV); shows what the 15% hold-out costs |
 | `c5_folds.csv` | Per familiar fold: fine-tuned single-seed MAE, `mean`/`std`/`size` over seeds, and `frozen_mae` (frozen best MoLFormer pipeline, full training fold) |
 | `c5_provisional.csv` | C5: `estimate` = fine-tuned − frozen MAE (positive = fine-tuned worse), corrected resampled t-test; raw p, before Holm |
+
+## `uncertainty/` (Step 5: 90% prediction intervals, `scripts/run_uncertainty.py`)
+
+`method`: `curated_frozen`, `morgan_frozen`, `molformer_frozen` (each task's best frozen pipeline, `regressor`
+ridge or xgboost), `molformer_finetuned_ensemble` (mean of the 3 seeds, canonical SMILES) or
+`molformer_finetuned_seed0`. `variant`: `cvplus` (K-fold CV+ from the 3 inner-fold models), `cvplus_mondrian`
+(familiar only: CV+ with only the test molecule's family's training residuals; a family with too few, i.e. "other",
+keeps the pooled interval), `split` (constant-width split conformal on the calibration half) or `split_normalised`
+(width scaled by the seed SD + its calibration median). The n = 250 tasks are not included.
+
+| File / column | Meaning |
+|---|---|
+| `intervals.csv.gz` | One row per test molecule × task × method × variant |
+| `group` | Family (literature molecules) or NIST subgroup |
+| `y_pred` | Point prediction: the refitted frozen pipeline, or the fine-tuned ensemble mean / seed 0 |
+| `lower`, `upper` | 90% interval (K) |
+| `uncertainty` | SD of the 3 inner-fold models' (frozen) or 3 seeds' (fine-tuned) predictions; empty for seed 0 |
+| `train_distance` | 1 − highest count-Tanimoto similarity (Morgan counts, radius 2) to any training molecule of the task |
+| `coverage.csv` | Per regime × task × method × variant × `group` (`all` or one family/subgroup): `n`, `coverage` (share inside the interval), `width` (mean, K) |
+| `spearman.csv` | Spearman correlation of a `score` (`model` = `uncertainty`, `distance` = `train_distance`) with the absolute error, per task × method; `scope` = `all` or a family/subgroup with ≥ 10 molecules |
+| `retention.csv` | Familiar regime: MAE of the `fraction` of test molecules with the lowest score; `score` also `oracle` (sorted by the true error) and `random` (one random order) |

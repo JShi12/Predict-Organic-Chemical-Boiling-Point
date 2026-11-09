@@ -102,7 +102,7 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 128 tests
+pytest tests/                                          # 135 tests
 pip install -r requirements-lm.txt                     # optional: chemical-language-model study
 jupyter notebook                                       # open any of the six notebooks
 ```
@@ -122,6 +122,7 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/run_representation_study.py --stage A` / `--stage B` | frozen-representation comparison: Ridge / XGBoost (`results/representation_study/frozen/`) | ~1 min / ~60 min |
 | `scripts/build_representations.py` | MoLFormer embedding cache (`data/cache/`, not committed) and label-free probes; needs `requirements-lm.txt` | ~1.5 min |
 | `scripts/run_finetuning.py --shard i --n-shards 3`, then `--collect` | fine-tuned MoLFormer, 125 runs in 3 parallel processes (resumable), then C5 (`results/representation_study/finetune/`); needs `requirements-lm.txt` | a few hours on CPU |
+| `scripts/run_uncertainty.py` | 90% prediction intervals (CV+, split conformal), uncertainty ranking (`results/representation_study/uncertainty/`) | seconds |
 
 ## Project structure
 
@@ -133,7 +134,7 @@ The notebooks load precomputed results. To regenerate them:
 │   ├── descriptors.py, families.py, validation.py                                      # part 3
 │   ├── audit.py                                                                         # part 4
 │   ├── bayes_opt.py                                                                     # part 5
-│   ├── splits.py, representations.py, study.py, study_stats.py, finetune.py             # representation study
+│   ├── splits.py, representations.py, study.py, study_stats.py, finetune.py, conformal.py  # representation study
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
