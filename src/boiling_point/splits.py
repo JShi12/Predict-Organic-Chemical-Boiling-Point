@@ -102,3 +102,37 @@ def nist_subgroup(smiles: str) -> str:
     if any(a.GetSymbol() in HALOGENS for a in mol.GetAtoms()):
         return "halogenated acyclic"
     return "other"
+
+
+def validation_split(train, families, groups, fraction: float = 0.15, seed: int = 0):
+    """Split training rows into (fit, stop, calibrate). The held-out
+    `fraction` is drawn as whole structure groups, in proportion to the
+    families, and halved the same way: `stop` serves early stopping and the
+    learning-rate choice, `calibrate` is kept for Step 5's intervals."""
+    train = np.asarray(train)
+    fam, grp = np.asarray(families)[train], np.asarray(groups)[train]
+    rng = np.random.default_rng(seed)
+
+    def take(candidates, n):
+        """Whole groups among `candidates` (positions), family-stratified, ~n rows."""
+        cand_fam = fam[candidates]
+        counts = pd.Series(cand_fam).value_counts()
+        quota = proportional_quotas(n, counts)
+        chosen = []
+        for f, q in quota.items():
+            pool = candidates[cand_fam == f]
+            taken = 0
+            for g in rng.permutation(np.unique(grp[pool])):
+                if taken >= q:
+                    break
+                rows = pool[grp[pool] == g]
+                chosen.extend(rows.tolist())
+                taken += len(rows)
+        return np.array(sorted(chosen), dtype=int)
+
+    everything = np.arange(len(train))
+    held = take(everything, round(fraction * len(train)))
+    stop = take(held, len(held) // 2)
+    calibrate = np.setdiff1d(held, stop)
+    fit = np.setdiff1d(everything, held)
+    return train[fit], train[stop], train[calibrate]

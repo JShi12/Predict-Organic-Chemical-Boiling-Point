@@ -63,3 +63,20 @@ regressor with the lower inner-CV MAE).
 | `layer_probe.csv` | Familiar regime, MoLFormer + Ridge: every layer's inner-CV and test MAE at its own inner-CV-best alpha (diagnostic only) |
 | `references.csv` | Training mean, molecular-weight-only Ridge, and (familiar only) the feature study's curated (log) + family ensemble |
 | `confirmatory_provisional.csv` | C1–C3: `estimate` = MAE(MoLFormer) − MAE(curated), best pipelines (positive = MoLFormer worse); raw p-values, before Holm |
+
+## `finetune/` (Step 4: fine-tuned MoLFormer-XL, `scripts/run_finetuning.py`)
+
+Tasks: the 15 familiar folds, the 4 held-out families, `nist`, and `n250_f{k}` (`regime` = `learning_curve`: the
+n = 250 subset of repeat-0 fold k, draw 0, tested on that fold's test molecules). Each task's training rows are
+split once (seed 0) into fitting, stopping (~7.5%) and calibration (~7.5%) rows, all whole structure groups.
+
+| File / column | Meaning |
+|---|---|
+| `runs/{task}__lr{lr}__s{seed}.json` | One training run (a `/` in the task name becomes `-`): per-epoch log, predictions, sizes. `--collect` builds the tables below from these |
+| `selection.csv` | One row per run. `chosen_lr`: the task's learning rate (seed 0's lowest `stop_mae_best3`; seeds 1–2 only ran at it). `stop_mae_best3`: mean of the 3 lowest per-epoch stopping-half MAEs. `best_epoch` (0-based), `epochs_run`, `n_fit`/`n_stop`/`n_calibrate`. `seconds` is wall-clock time and includes any time the computer slept |
+| `predictions.csv` | Test predictions of the chosen-rate runs, per seed. `inference`: `canonical` (canonical SMILES) or `tta` (mean over 10 randomised spellings, seed 0, the same spellings as the frozen `random10` embeddings). `key` as in `frozen/` |
+| `calibration.csv` | Canonical predictions for each task's calibration rows (Step 5's split-conformal intervals), per seed |
+| `training_log.csv` | Per epoch: mean training loss (MSE on standardised targets) and stopping-half MAE (K) |
+| `frozen_matched_predictions.csv` | Familiar folds: frozen MoLFormer + Ridge refitted on the same fitting rows (layer and alpha re-chosen in the inner CV); shows what the 15% hold-out costs |
+| `c5_folds.csv` | Per familiar fold: fine-tuned single-seed MAE, `mean`/`std`/`size` over seeds, and `frozen_mae` (frozen best MoLFormer pipeline, full training fold) |
+| `c5_provisional.csv` | C5: `estimate` = fine-tuned − frozen MAE (positive = fine-tuned worse), corrected resampled t-test; raw p, before Holm |

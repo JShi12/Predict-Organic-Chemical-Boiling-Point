@@ -1,0 +1,2 @@
+comparison,estimate,se,t,df,p_raw,n_folds,status
+C5,2.266686435447527,0.5497532468528874,4.12309785967319,14,0.001034427482624286,15,provisional: Holm and the 1.0 K rule applied once C4 exists
