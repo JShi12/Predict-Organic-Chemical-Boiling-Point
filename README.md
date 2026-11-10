@@ -102,7 +102,7 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 135 tests
+pytest tests/                                          # 137 tests
 pip install -r requirements-lm.txt                     # optional: chemical-language-model study
 jupyter notebook                                       # open any of the six notebooks
 ```
@@ -123,6 +123,8 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/build_representations.py` | MoLFormer embedding cache (`data/cache/`, not committed) and label-free probes; needs `requirements-lm.txt` | ~1.5 min |
 | `scripts/run_finetuning.py --shard i --n-shards 3`, then `--collect` | fine-tuned MoLFormer, 125 runs in 3 parallel processes (resumable), then C5 (`results/representation_study/finetune/`); needs `requirements-lm.txt` | a few hours on CPU |
 | `scripts/run_uncertainty.py` | 90% prediction intervals (CV+, split conformal), uncertainty ranking (`results/representation_study/uncertainty/`) | seconds |
+| `scripts/run_learning_curves.py` | learning curves at n = 100/250/500 and C4 (`results/representation_study/learning_curve/`) | ~55 min (8 workers) |
+| `scripts/confirmatory.py` | C1–C5 with Holm and the 1.0 K rule (`results/representation_study/confirmatory.csv`) | seconds |
 
 ## Project structure
 

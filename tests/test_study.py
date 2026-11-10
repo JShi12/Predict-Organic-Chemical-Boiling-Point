@@ -101,3 +101,35 @@ def test_a_finding_needs_both_holm_and_the_minimum_difference():
     assert study_stats.finding(0.01, -1.5)
     assert not study_stats.finding(0.01, -0.5)
     assert not study_stats.finding(0.2, -3.0)
+
+
+def test_learning_curve_tasks_are_nested_inside_training_and_share_test_folds():
+    import os
+    path = "results/representation_study/splits.csv"
+    if not os.path.exists(path):
+        pytest.skip("splits.csv not built")
+    df = pd.read_csv(path)
+    tasks = study.learning_curve_tasks(df)
+    assert len(tasks) == 5 * 3 * 3
+    grp = df["structure_group"].to_numpy()
+    by = {(t["fold"], t["draw"], t["size"]): t for t in tasks}
+    for (k, d, n), t in by.items():
+        fold_train = np.flatnonzero(df["fold_r0"].to_numpy() != k)
+        assert set(t["train"]) <= set(fold_train)
+        assert np.array_equal(t["test"], np.flatnonzero(df["fold_r0"].to_numpy() == k))
+        assert n <= len(t["train"]) <= n + 5                        # whole groups can overshoot slightly
+        assert not set(grp[t["train"]]) & set(grp[t["test"]])
+        for smaller in (100, 250):
+            if smaller < n:
+                assert set(by[(k, d, smaller)]["train"]) <= set(t["train"])
+        fam = study.inner_folds(t, df["family"].to_numpy(), grp)
+        assert len(fam) == study.N_INNER
+
+
+def test_confirmatory_table_bounds_bootstrap_p_and_applies_holm_and_the_size_rule():
+    t = pd.DataFrame({"comparison": ["C1", "C2", "C3"], "estimate": [0.4, 9.7, 0.5],
+                      "p_raw": [0.5, 0.0, 0.001], "test": ["corrected t", "bootstrap", "corrected t"]})
+    out = study_stats.confirmatory_table(t, n_boot=10_000)
+    assert out["p_used"].tolist() == [0.5, 0.0002, 0.001]
+    assert out["p_holm"].tolist() == pytest.approx([0.5, 0.0006, 0.002])
+    assert out["finding"].tolist() == [False, True, False]     # C3 significant but below 1.0 K

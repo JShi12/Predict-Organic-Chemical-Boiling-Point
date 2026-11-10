@@ -101,3 +101,27 @@ keeps the pooled interval), `split` (constant-width split conformal on the calib
 | `coverage.csv` | Per regime × task × method × variant × `group` (`all` or one family/subgroup): `n`, `coverage` (share inside the interval), `width` (mean, K) |
 | `spearman.csv` | Spearman correlation of a `score` (`model` = `uncertainty`, `distance` = `train_distance`) with the absolute error, per task × method; `scope` = `all` or a family/subgroup with ≥ 10 molecules |
 | `retention.csv` | Familiar regime: MAE of the `fraction` of test molecules with the lowest score; `score` also `oracle` (sorted by the true error) and `random` (one random order) |
+
+## `learning_curve/` (Step 6: learning curves and C4, `scripts/run_learning_curves.py`)
+
+Tasks `n{size}_f{fold}_d{draw}`: repeat-0 fold `fold` trained on its saved nested subset (`lc_entry_f{fold}_d{draw}`
+in `splits.csv`) of `size` 100, 250 or 500, tested on the unchanged fold. `size` = `full` rows come from Step 3
+(repeat 0, one draw).
+
+| File / column | Meaning |
+|---|---|
+| `runs/*.json` | One (task, representation, regressor) fit; the tables below are built from these |
+| `selection.csv` | Per fit: `n_train` (realised subset size), MoLFormer `layer`, `params`, `inner_mae`, `seconds` |
+| `predictions.csv` / `best_predictions.csv` | Test predictions of every fit / of the best pipeline per task and representation (lower inner-CV MAE; `best_selection.csv`) |
+| `references.csv` | Training-mean prediction at each task |
+| `curves.csv` | MAE per `size` × `fold` × `draw` × `representation` × `regressor` (`best`, `ridge`, `xgboost`, or `reference` for the training mean) |
+| `differences.csv` | Per run, best pipelines: MoLFormer − curated and Morgan − curated MAE (K) |
+| `c4_provisional.csv` | C4 at n = 100: corrected resampled t-test over the 15 runs (`n_train`, `n_test` used in the correction); `min_detectable` = SE × t(0.975, df) |
+| `h5_finetuned_vs_frozen.csv` | Per repeat-0 fold at n = 250 (draw 0) and full size: fine-tuned single-seed MAE (mean over seeds), the frozen best MoLFormer pipeline, and frozen MoLFormer + Ridge refitted on the fine-tuned model's fitting rows (`frozen_matched`); differences `minus_best`, `minus_matched` |
+
+## `confirmatory.csv` (`scripts/confirmatory.py`)
+
+C1–C5 with Holm (1979) at α = 0.05. `estimate`: the first-named method's MAE minus the second's (positive = first
+worse). `test`: `corrected t` (Nadeau & Bengio 2003) or `bootstrap` (stratified, 10,000 draws). `p_used`: `p_raw`,
+except a bootstrap p of 0 is replaced by its resolution bound 0.0002. `p_holm`: Holm-adjusted. `finding`: `p_holm`
+< 0.05 and |`estimate`| ≥ 1.0 K.

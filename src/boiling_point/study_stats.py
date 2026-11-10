@@ -73,3 +73,18 @@ def fold_mae_table(predictions: pd.DataFrame, by=("regime", "task", "representat
     return (predictions.assign(abs_err=err.abs(), sq_err=err ** 2).groupby(list(by))
             .agg(mae=("abs_err", "mean"), rmse=("sq_err", lambda s: float(np.sqrt(s.mean()))), n=("abs_err", "size"))
             .reset_index())
+
+
+def confirmatory_table(table: pd.DataFrame, n_boot: int = 10_000, alpha: float = 0.05,
+                       min_difference: float = 1.0) -> pd.DataFrame:
+    """Holm across the confirmatory comparisons and the finding rule.
+
+    table: one row per comparison with `estimate`, `p_raw` and `test`
+    ('corrected t' or 'bootstrap'). A bootstrap p of 0 only says p is below
+    the resolution 2 / n_boot, so that bound is used instead (conservative)."""
+    out = table.copy()
+    bound = 2 / n_boot
+    out["p_used"] = np.where(out["test"] == "bootstrap", np.maximum(out["p_raw"], bound), out["p_raw"])
+    out["p_holm"] = holm(out["p_used"])
+    out["finding"] = [finding(p, e, alpha, min_difference) for p, e in zip(out["p_holm"], out["estimate"])]
+    return out

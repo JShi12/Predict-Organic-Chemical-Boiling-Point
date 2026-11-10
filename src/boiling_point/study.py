@@ -63,6 +63,22 @@ def holdout_tasks(splits: pd.DataFrame) -> list:
     return tasks
 
 
+def learning_curve_tasks(splits: pd.DataFrame, sizes=(100, 250, 500), draws: int = 3, n_folds: int = 5) -> list:
+    """Repeat-0 folds trained on the nested subsets saved in splits.csv
+    (`lc_entry_f{k}_d{d}`: -1 in the test fold; a row is in the size-n subset
+    if its entry is between 0 and n). Test rows are the unchanged fold."""
+    tasks = []
+    fold = splits["fold_r0"].to_numpy()
+    for k in range(n_folds):
+        for d in range(draws):
+            entry = splits[f"lc_entry_f{k}_d{d}"].to_numpy()
+            for n in sizes:
+                tasks.append({"regime": "learning_curve", "task": f"n{n}_f{k}_d{d}", "repeat": 0, "fold": k,
+                              "size": n, "draw": d, "train": np.flatnonzero((entry >= 0) & (entry <= n)),
+                              "test": np.flatnonzero(fold == k)})
+    return tasks
+
+
 def nist_task(n_literature: int, nist_rows: np.ndarray) -> dict:
     """Train on every literature row; test on the NIST rows, which sit after
     the literature rows in the combined arrays."""

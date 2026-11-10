@@ -1,0 +1,2 @@
+comparison,regime,estimate,se,t,df,p_raw,n_units,n_train,n_test,min_detectable,status
+C4,learning_curve (n = 100),-0.42333603400647185,4.592686408842731,-0.09217612445547843,14,0.927864108946975,15,100.33333333333333,250.0,9.850332671466914,provisional: Holm and the 1.0 K rule in confirmatory.csv

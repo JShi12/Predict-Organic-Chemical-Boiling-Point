@@ -1,0 +1,6 @@
+comparison,hypothesis,contrast,estimate,se,ci_low,ci_high,p_raw,test,p_used,p_holm,finding,direction
+C1,H1,"frozen MoLFormer - curated (log), familiar, 15 folds",0.4324128572957079,0.6339892147241204,,,0.5063349513380943,corrected t,0.5063349513380943,1.0,False,first worse
+C2,H2,"frozen MoLFormer - curated (log), held-out families, macro-average of 4",9.666734811401918,,8.39765943319265,10.946045539286253,0.0,bootstrap,0.0002,0.001,True,first worse
+C3,H3,"frozen MoLFormer - curated (log), NIST external, macro-average of 3 subgroups",128.6935400413316,,105.963807885067,152.70189820890843,0.0,bootstrap,0.0002,0.001,True,first worse
+C4,H4,"frozen MoLFormer - curated (log), familiar, n = 100, 5 folds x 3 draws",-0.4233360340064718,4.592686408842731,,,0.927864108946975,corrected t,0.927864108946975,1.0,False,first better
+C5,H5,"fine-tuned - frozen MoLFormer, familiar, 15 folds",2.266686435447527,0.5497532468528874,,,0.0010344274826242,corrected t,0.0010344274826242,0.0031032824478726,True,first worse
