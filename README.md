@@ -21,7 +21,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 | 3. [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested CV shows the original single-split result (26 K RMSE) was an easy split. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
 | 4. [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | Of 1,588 labels, 327 are Joback estimates rather than measurements. 58 involve >20 heavy atoms, where Joback shows substantial positive bias in our dataset, and 10 more fail independent checks (measured values, supplier data, or physical plausibility). On the 1,251 measured labels, curated descriptors achieve **~10.7 K MAE**. |
 | 5. [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) | How few experiments find the compounds that meet a spec? | For a 453–473 K window, batch BO finds 69% of in-spec compounds after 12% of the experiments: 5.4× random, better than every alternative in 20/20 seeds. |
-| 6. [`Representation_Study.ipynb`](Representation_Study.ipynb) (in progress) | Do pretrained chemical-language-model embeddings beat conventional features? | Frozen MoLFormer matches the curated descriptors on familiar chemistry (MAE 11.43 vs 11.00 K) but is worse on unseen families (+9.67 K) and on unfamiliar NIST compounds (+128.7 K), where a linear readout extrapolates to impossible negative temperatures. Fine-tuning and learning curves are next. |
+| 6. [`Representation_Study.ipynb`](Representation_Study.ipynb) | Do pretrained chemical-language-model embeddings beat conventional features? | Frozen MoLFormer matches the curated descriptors on familiar chemistry (MAE 11.43 vs 11.00 K), also with only 100 training molecules, but is worse on unseen families (+9.67 K) and on unfamiliar NIST compounds (+128.7 K). Fine-tuning it is worse still (+2.27 K vs frozen). Conformal 90% intervals hold on familiar chemistry (coverage 0.905–0.940) but not under shift (0.17–0.84). |
 
 **What the project shows:**
 - **Check the labels before comparing models.** The biggest improvement came from finding that a fifth of the labels were computed estimates, not from better features or models.
@@ -125,6 +125,7 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/run_uncertainty.py` | 90% prediction intervals (CV+, split conformal), uncertainty ranking (`results/representation_study/uncertainty/`) | seconds |
 | `scripts/run_learning_curves.py` | learning curves at n = 100/250/500 and C4 (`results/representation_study/learning_curve/`) | ~55 min (8 workers) |
 | `scripts/confirmatory.py` | C1–C5 with Holm and the 1.0 K rule (`results/representation_study/confirmatory.csv`) | seconds |
+| `scripts/morgan_descriptive.py` | descriptive Morgan − curated and Morgan − MoLFormer contrasts, same tests as C1–C4, raw p only (`results/representation_study/morgan_descriptive.csv`) | seconds |
 
 ## Project structure
 

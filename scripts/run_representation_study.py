@@ -171,14 +171,17 @@ def best_pipelines(out: str) -> pd.DataFrame:
     return best
 
 
-def provisional_confirmatory(d: dict, best: pd.DataFrame) -> pd.DataFrame:
-    """C1-C3: MAE(MoLFormer) - MAE(curated), both best pipelines. Negative =
-    MoLFormer better. Raw p-values; Holm and the decision wait for C4 and C5."""
+def provisional_confirmatory(d: dict, best: pd.DataFrame, first: str = "molformer",
+                             second: str = "curated") -> pd.DataFrame:
+    """C1-C3: MAE(first) - MAE(second), both best pipelines; by default
+    MoLFormer - curated. Negative = first better. Raw p-values; Holm and the
+    decision wait for C4 and C5. Other pairs (the descriptive Morgan
+    contrasts, scripts/morgan_descriptive.py) reuse the same tests."""
     wide = best.pivot_table(index=["regime", "task", "key"], columns="representation", values="y_pred").reset_index()
     wide = wide.merge(best[["key", "y_true"]].drop_duplicates(), on="key")
     rows = []
     fam = wide[wide["regime"] == "familiar"].assign(
-        a=lambda w: (w["molformer"] - w["y_true"]).abs(), b=lambda w: (w["curated"] - w["y_true"]).abs())
+        a=lambda w: (w[first] - w["y_true"]).abs(), b=lambda w: (w[second] - w["y_true"]).abs())
     if len(fam):
         per_fold = fam.groupby("task")[["a", "b"]].mean()
         n_test = fam.groupby("task").size().mean()
@@ -191,8 +194,8 @@ def provisional_confirmatory(d: dict, best: pd.DataFrame) -> pd.DataFrame:
         w = wide[wide["regime"] == regime]
         if not len(w):
             continue
-        r = study_stats.bootstrap_macro_difference((w["molformer"] - w["y_true"]).abs(),
-                                                   (w["curated"] - w["y_true"]).abs(), strata[regime](w))
+        r = study_stats.bootstrap_macro_difference((w[first] - w["y_true"]).abs(),
+                                                   (w[second] - w["y_true"]).abs(), strata[regime](w))
         rows.append({"comparison": comparison, "regime": regime, "estimate": r["estimate"], "se": np.nan,
                      "ci_low": r["ci_low"], "ci_high": r["ci_high"], "p_raw": r["p"], "n_units": len(w),
                      "per_stratum": json.dumps(r["per_stratum"])})

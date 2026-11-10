@@ -1,0 +1,9 @@
+contrast,as_in,setting,test,estimate,se,ci_low,ci_high,p_raw,min_detectable,n_units,per_stratum,at_least_1K,direction
+Morgan - curated (log),C1,"familiar, 15 folds",corrected t,1.749918773333333,0.5267600234406568,,,0.005036485606904997,,15,,True,Morgan worse
+Morgan - curated (log),C2,"held-out families, macro-average of 4",bootstrap,7.744563820396488,,6.332396738376438,9.176871021535037,0.0,,1247,"{""alcohol/phenol"": 15.76063376068376, ""alkane"": 4.3830077835051435, ""alkene/alkyne"": 14.386976202185792, ""amine"": -3.552362464788743}",True,Morgan worse
+Morgan - curated (log),C3,"NIST external, macro-average of 3 subgroups",bootstrap,57.16593475724824,,45.43771614457205,68.56868411400723,0.0,,211,"{""halogenated acyclic"": -33.13042, ""other"": 28.482973582089546, ""ring-containing"": 176.14525068965517}",True,Morgan worse
+Morgan - curated (log),C4,"familiar, n = 100, 5 folds x 3 draws",corrected t,10.967978635039259,8.020560493891715,,,0.19302769204419162,17.202391376938397,15,,True,Morgan worse
+Morgan - frozen MoLFormer,C1,"familiar, 15 folds",corrected t,1.3175059160376246,0.6081113270288504,,,0.048011970719038476,,15,,True,Morgan worse
+Morgan - frozen MoLFormer,C2,"held-out families, macro-average of 4",bootstrap,-1.922170991005431,,-3.488340596404813,-0.3362182059299508,0.0196,,1247,"{""alcohol/phenol"": -3.20820457816109, ""alkane"": 5.125128376672896, ""alkene/alkyne"": -3.7848306765774122, ""amine"": -5.820777085956117}",True,Morgan better
+Morgan - frozen MoLFormer,C3,"NIST external, macro-average of 3 subgroups",bootstrap,-71.52760528408334,,-96.49423713714752,-47.281199643451345,0.0,,211,"{""halogenated acyclic"": -73.91489159720469, ""other"": -5.933172850897265, ""ring-containing"": -134.73475140414806}",True,Morgan better
+Morgan - frozen MoLFormer,C4,"familiar, n = 100, 5 folds x 3 draws",corrected t,11.39131466904573,6.692685006786557,,,0.11083604857713922,14.354381708982885,15,,True,Morgan worse

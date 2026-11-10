@@ -125,3 +125,23 @@ C1–C5 with Holm (1979) at α = 0.05. `estimate`: the first-named method's MAE 
 worse). `test`: `corrected t` (Nadeau & Bengio 2003) or `bootstrap` (stratified, 10,000 draws). `p_used`: `p_raw`,
 except a bootstrap p of 0 is replaced by its resolution bound 0.0002. `p_holm`: Holm-adjusted. `finding`: `p_holm`
 < 0.05 and |`estimate`| ≥ 1.0 K.
+
+## `morgan_descriptive.csv` (`scripts/morgan_descriptive.py`)
+
+Descriptive contrasts for the pre-registered Morgan baseline, outside the confirmatory family (no Holm, no `finding`).
+One row per contrast × setting.
+
+| Column | Meaning |
+|---|---|
+| `contrast` | `Morgan - curated (log)` or `Morgan - frozen MoLFormer`; best pipelines (frozen) |
+| `as_in` | the confirmatory comparison whose setting and test are reused (C1–C4) |
+| `setting` | familiar 15 folds; held-out families (macro-average of 4); NIST (macro-average of 3 subgroups); n = 100 (15 runs) |
+| `test` | `corrected t` (Nadeau & Bengio 2003) or `bootstrap` (stratified, 10,000 draws) |
+| `estimate` | MAE(Morgan) − MAE(other), K; positive = Morgan worse |
+| `se` / `ci_low`, `ci_high` | SE (corrected t rows) / 95% percentile interval (bootstrap rows) |
+| `p_raw` | two-sided p, uncorrected; a bootstrap p of 0 means p < 0.0002 |
+| `min_detectable` | n = 100 rows only: SE × t(0.975, df) |
+| `n_units` | folds/runs (t) or molecules (bootstrap) |
+| `per_stratum` | bootstrap rows: JSON of each family's or subgroup's difference (K) |
+| `at_least_1K` | |`estimate`| ≥ 1.0 K |
+| `direction` | `Morgan worse` / `Morgan better` |
