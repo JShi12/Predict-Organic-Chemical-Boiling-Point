@@ -166,3 +166,26 @@ MAE(method) − MAE(curated) on the same draws.
 | `nist_cells.csv` | The same statistics per NIST `subgroup` × `single_measurement` |
 | `disagreements.csv` | The 20 familiar molecules with the largest \|`pred_molformer_frozen` − `pred_curated`\| (means over repeats): `pred_*`, `err_*` per method, plus `pred_curated_ridge` / `err_curated_ridge` (curated with Ridge, to separate regressor from representation) and `closer` (MoLFormer vs curated best pipeline) |
 | `spelling.csv` | Per familiar task × test molecule: `layer` and frozen MoLFormer + Ridge refitted with the saved layer and alpha; `pred_canonical` (equals the saved prediction), `pred_spelling_0`…`9` (the 10 randomised spellings of the cache), `spelling_mean`, `spelling_sd` (ddof = 1), `spelling_range` |
+
+## `combined/` (Step 8: combining representations, exploratory, `scripts/run_combined.py`)
+
+`method`:
+- `curated_best`, `molformer_best`, `morgan_best`: the best frozen pipeline per representation, as in `frozen/`.
+- `S0`: curated Ridge + curated XGBoost.
+- `S1`: best curated + best MoLFormer.
+- `S1m`: best curated + best Morgan.
+- `S2`: all six frozen pipelines.
+- `S1_abs`, `S0_abs`: S1 / S0 with weights that minimise absolute instead of squared error.
+- `average`: S1's two inputs with equal weights.
+- `concat_ridge`: Ridge on curated (log) + one MoLFormer layer, each block standardised and divided by √(column count).
+
+Stacking weights are non-negative, sum to 1 and are fitted per task on the out-of-fold training predictions
+(y − residual from `frozen/*_cvplus_residuals.csv.gz`).
+
+| File / column | Meaning |
+|---|---|
+| `concat_ridge_predictions.csv`, `concat_ridge_selection.csv` | As `frozen/ridge_predictions.csv` / `ridge_selection.csv`, `representation` = `concat`; `layer` is the MoLFormer layer joined to the descriptors |
+| `stacked_predictions.csv` | One row per `regime` × `task` × `method` × test `key`: `y_true`, `y_pred` (K); stacked methods and the three `*_best` |
+| `weights.csv` | Per `regime` × `task` × `method` × input `pipeline` (`{representation}_{regressor}`): `weight`; `oof_mae` = the blend's MAE on the out-of-fold training predictions |
+| `metrics.csv` | Per `regime` × `method`: `mae` (mean over tasks), `sd` (SD over tasks), `n_tasks`; `nist_macro_mae` = mean of the 3 NIST subgroup MAEs |
+| `contrasts.csv` | `contrast` = MAE(first) − MAE(second); `setting_as_in` = the C1–C3 setting whose test is used (`test`: corrected t or stratified bootstrap); `estimate`, `se` (corrected t only), `ci_low`, `ci_high` (familiar: estimate ± t(0.975, 14) × se), `p_raw` (no Holm), `n_units`, `per_stratum`; `at_least_1K_better` = estimate ≤ −1.0 K and `ci_high` < 0 |

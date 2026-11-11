@@ -36,10 +36,13 @@ from xgboost import XGBRegressor
 
 from . import validation
 from .models import XGB_PARAM_GRID
+from .stacking import BlockScaler
 
 ALPHAS = [0.01, 0.1, 1, 10, 100, 1e3, 1e4, 1e5]
 N_INNER = 3
 REPRESENTATIONS = ("curated", "morgan", "molformer")
+# X has a leading layer axis; the layer is tuned by Ridge in the inner CV
+LAYERED = ("molformer", "concat")
 
 
 # --- tasks and inner folds ----------------------------------------------------
@@ -99,9 +102,13 @@ def inner_folds(task: dict, families: np.ndarray, groups: np.ndarray, random_sta
 
 # --- pipelines ------------------------------------------------------------------
 
-def ridge_pipeline(representation: str):
+def ridge_pipeline(representation: str, blocks=None):
     if representation == "curated":
         return validation._scaled(Ridge())   # includes DropCorrelated, as in the feature study
+    if representation == "concat":
+        # Step 8: descriptors + one embedding layer, each block weighted equally (stacking.BlockScaler)
+        pipe = Pipeline([("scale", BlockScaler(blocks)), ("model", Ridge())])
+        return TransformedTargetRegressor(regressor=pipe, transformer=StandardScaler())
     pipe = Pipeline([("constant", VarianceThreshold()), ("scale", StandardScaler()), ("model", Ridge())])
     return TransformedTargetRegressor(regressor=pipe, transformer=StandardScaler())
 
@@ -163,10 +170,12 @@ def fit_and_record(estimator, params: dict, X_train, y_train, X_test, folds) -> 
 
 
 def run_task(task: dict, representation: str, regressor: str, X, y, families, groups, layer=None,
-             alphas=ALPHAS, xgb_param_grid: dict = XGB_PARAM_GRID, layer_probe: bool = False) -> dict:
+             alphas=ALPHAS, xgb_param_grid: dict = XGB_PARAM_GRID, layer_probe: bool = False,
+             blocks=None) -> dict:
     """Tune and evaluate one (task, representation, regressor).
 
-    X: (n, d) features, or for MoLFormer (n_layers, n, d). Ridge on MoLFormer
+    X: (n, d) features, or for MoLFormer and concat (n_layers, n, d); `blocks`
+    gives concat's (descriptor, embedding) column counts. Ridge on MoLFormer
     chooses the layer and alpha jointly in the inner CV; XGBoost on MoLFormer
     needs `layer` (the one Ridge chose). With layer_probe, also returns each
     layer's test MAE at its own inner-CV-best alpha (a diagnostic only)."""
@@ -176,8 +185,8 @@ def run_task(task: dict, representation: str, regressor: str, X, y, families, gr
     y_tr = y[train]
     probe = []
     if regressor == "ridge":
-        estimator, grid = ridge_pipeline(representation), ridge_grid(alphas)
-        if representation == "molformer":
+        estimator, grid = ridge_pipeline(representation, blocks), ridge_grid(alphas)
+        if representation in LAYERED:
             per_layer = [tune(estimator, grid, X[l][train], y_tr, folds) for l in range(X.shape[0])]
             layer = int(np.argmin([t["inner_mae"] for t in per_layer]))
             best = per_layer[layer]
@@ -190,12 +199,12 @@ def run_task(task: dict, representation: str, regressor: str, X, y, families, gr
             best = tune(estimator, grid, X[train], y_tr, folds)
     elif regressor == "xgboost":
         estimator, grid = xgb_pipeline(), xgb_grid(xgb_param_grid)
-        if representation == "molformer" and layer is None:
+        if representation in LAYERED and layer is None:
             raise ValueError("XGBoost on MoLFormer needs the layer chosen by Ridge")
-        best = tune(estimator, grid, (X[layer] if representation == "molformer" else X)[train], y_tr, folds)
+        best = tune(estimator, grid, (X[layer] if representation in LAYERED else X)[train], y_tr, folds)
     else:
         raise ValueError(f"unknown regressor {regressor!r}")
-    Xm = X[layer] if representation == "molformer" else X
+    Xm = X[layer] if representation in LAYERED else X
     record = fit_and_record(estimator, best["params"], Xm[train], y_tr, Xm[test], folds)
     return {**{k: task[k] for k in ("regime", "task", "repeat", "fold")}, "representation": representation,
             "regressor": regressor, "layer": layer, "params": best["params"], "inner_mae": best["inner_mae"],

@@ -21,7 +21,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 | 3. [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested CV shows the original single-split result (26 K RMSE) was an easy split. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
 | 4. [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | Of 1,588 labels, 327 are Joback estimates rather than measurements. 58 involve >20 heavy atoms, where Joback shows substantial positive bias in our dataset, and 10 more fail independent checks (measured values, supplier data, or physical plausibility). On the 1,251 measured labels, curated descriptors achieve **~10.7 K MAE**. |
 | 5. [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) | How few experiments find the compounds that meet a spec? | For a 453–473 K window, batch BO finds 69% of in-spec compounds after 12% of the experiments: 5.4× random, better than every alternative in 20/20 seeds. |
-| 6. [`Representation_Study.ipynb`](Representation_Study.ipynb) | Do pretrained chemical-language-model embeddings beat conventional features? | Frozen MoLFormer matches the curated descriptors on familiar chemistry (MAE 11.43 vs 11.00 K), also with only 100 training molecules, but is worse on unseen families (+9.67 K) and on unfamiliar NIST compounds (+128.7 K). Fine-tuning it is worse still (+2.27 K vs frozen). Conformal 90% intervals hold on familiar chemistry (coverage 0.905–0.940) but not under shift (0.17–0.84). Frozen MoLFormer also needs canonical SMILES: a random spelling raises its MAE to 21.07 K. |
+| 6. [`Representation_Study.ipynb`](Representation_Study.ipynb) | Do pretrained chemical-language-model embeddings beat conventional features? | Frozen MoLFormer matches the curated descriptors on familiar chemistry (MAE 11.43 vs 11.00 K), also with only 100 training molecules, but is worse on unseen families (+9.67 K) and on unfamiliar NIST compounds (+128.7 K). Fine-tuning it is worse still (+2.27 K vs frozen). Conformal 90% intervals hold on familiar chemistry (coverage 0.905–0.940) but not under shift (0.17–0.84). Frozen MoLFormer also needs canonical SMILES: a random spelling raises its MAE to 21.07 K. Stacking it with the descriptors gains 0.79 K on familiar chemistry (interval includes 0) and costs accuracy under shift (+2.77 K held-out families, +58.33 K NIST). |
 
 **What the project shows:**
 - **Check the labels before comparing models.** The biggest improvement came from finding that a fifth of the labels were computed estimates, not from better features or models.
@@ -102,7 +102,7 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 143 tests
+pytest tests/                                          # 151 tests
 pip install -r requirements-lm.txt                     # optional: chemical-language-model study
 jupyter notebook                                       # open any of the six notebooks
 ```
@@ -128,6 +128,7 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/morgan_descriptive.py` | descriptive Morgan − curated and Morgan − MoLFormer contrasts, same tests as C1–C4, raw p only (`results/representation_study/morgan_descriptive.csv`) | seconds |
 | `scripts/embed_spellings.py` | per-spelling MoLFormer embeddings for the spelling probe (`data/cache/molformer/spellings/`, not committed); needs `requirements-lm.txt` | ~1 min |
 | `scripts/error_analysis.py` | exploratory error analysis: errors by attribute and distance, NIST single-measurement labels, largest disagreements, spelling sensitivity (`results/representation_study/error_analysis/`) | seconds |
+| `scripts/run_combined.py --stage concat` then `--stage stack` | exploratory: stacking the frozen pipelines and Ridge on descriptors + embedding (`results/representation_study/combined/`) | ~20 s, then seconds |
 
 ## Project structure
 
@@ -139,7 +140,7 @@ The notebooks load precomputed results. To regenerate them:
 │   ├── descriptors.py, families.py, validation.py                                      # part 3
 │   ├── audit.py                                                                         # part 4
 │   ├── bayes_opt.py                                                                     # part 5
-│   ├── splits.py, representations.py, study.py, study_stats.py, finetune.py, conformal.py, error_analysis.py  # representation study
+│   ├── splits.py, representations.py, study.py, study_stats.py, finetune.py, conformal.py, error_analysis.py, stacking.py  # representation study
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
