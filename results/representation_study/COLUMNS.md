@@ -145,3 +145,24 @@ One row per contrast × setting.
 | `per_stratum` | bootstrap rows: JSON of each family's or subgroup's difference (K) |
 | `at_least_1K` | |`estimate`| ≥ 1.0 K |
 | `direction` | `Morgan worse` / `Morgan better` |
+
+## `error_analysis/` (Step 7: exploratory error analysis, `scripts/error_analysis.py`)
+
+`method`: `curated`, `morgan`, `molformer_frozen` (best frozen pipelines) or `molformer_finetuned` (canonical SMILES;
+`abs_err` = mean over the 3 seeds of the absolute error, `y_pred` = mean over seeds). Intervals: 95% percentile
+intervals from 2,000 bootstrap resamples of structure groups (NIST: each molecule its own group); `diff` =
+MAE(method) − MAE(curated) on the same draws.
+
+| File / column | Meaning |
+|---|---|
+| `molecules.csv` | One row per regime × molecule × method. Familiar: averaged over the 3 repeats (`n_tasks`) |
+| `abs_err`, `y_pred`, `train_distance` | Absolute error (K), prediction (K), 1 − highest count-Tanimoto similarity to the task's training set |
+| `group` | Family (literature) or NIST subgroup; `structure_group` = bootstrap unit |
+| `heavy_atoms`, `hbd`, `hba`, `n_oh` | RDKit heavy atoms, Lipinski H-bond donors / acceptors, aliphatic + aromatic OH groups |
+| `hard_region` | Literature only: PubChem polar area ≥ 40 or rotatable bonds ≥ 14 (`features.in_hard_region`) |
+| `small_polyol` | ≥ 2 OH and ≤ 8 heavy atoms |
+| `single_measurement` | NIST only: the label rests on one measurement |
+| `bins.csv` | Per `regime` × `attribute` × `bin` × `method`: `n`, `n_groups`, `mae`, `ci_low`, `ci_high`, `diff`, `diff_ci_low`, `diff_ci_high`. `train_distance` bins are quintiles within the regime, labelled with their observed range |
+| `nist_cells.csv` | The same statistics per NIST `subgroup` × `single_measurement` |
+| `disagreements.csv` | The 20 familiar molecules with the largest \|`pred_molformer_frozen` − `pred_curated`\| (means over repeats): `pred_*`, `err_*` per method, plus `pred_curated_ridge` / `err_curated_ridge` (curated with Ridge, to separate regressor from representation) and `closer` (MoLFormer vs curated best pipeline) |
+| `spelling.csv` | Per familiar task × test molecule: `layer` and frozen MoLFormer + Ridge refitted with the saved layer and alpha; `pred_canonical` (equals the saved prediction), `pred_spelling_0`…`9` (the 10 randomised spellings of the cache), `spelling_mean`, `spelling_sd` (ddof = 1), `spelling_range` |
