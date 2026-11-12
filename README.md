@@ -102,7 +102,7 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 153 tests
+pytest tests/                                          # 156 tests
 pip install -r requirements-lm.txt                     # optional: chemical-language-model study
 jupyter notebook                                       # open any of the six notebooks
 ```
@@ -130,6 +130,7 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/error_analysis.py` | exploratory error analysis: errors by attribute and distance, NIST single-measurement labels, largest disagreements, spelling sensitivity (`results/representation_study/error_analysis/`) | seconds |
 | `scripts/run_combined.py --stage concat` then `--stage stack` | exploratory: stacking the frozen pipelines and Ridge on descriptors + embedding (`results/representation_study/combined/`) | ~20 s, then seconds |
 | `scripts/run_head_control.py` | exploratory: the fine-tuning head on frozen embeddings (layer 1, pooled output), to separate encoder, head and layer in C5 (`results/representation_study/finetune/head_control/`) | ~1 min |
+| `scripts/run_finetune_readout.py --phase familiar\|transfer --shard i`, then `--collect` | exploratory: fine-tuning MoLFormer truncated after block 1, head on layer 1 (`results/representation_study/finetune_readout/`); `--check-default` confirms the Step 4 path is unchanged | ~25 min (familiar, 4 shards), ~5 min (transfer) |
 
 ## Project structure
 

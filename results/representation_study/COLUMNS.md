@@ -206,3 +206,22 @@ Stacking weights are non-negative, sum to 1 and are fitted per task on the out-o
 | `predictions.csv` | Test predictions of the kept runs and matched Ridge: `task`, `method`, `seed`, `key`, `y_true`, `y_pred` (K) |
 | `folds.csv` | Per familiar fold (`task`): test MAE (K) per method; MLP = mean single-seed MAE over 3 seeds |
 | `contrasts.csv` | `contrast`, `first` − `second` over 15 folds: `estimate`, `se`, `ci_low`/`ci_high` (estimate ± t(0.975, 14) × se), `p_raw` (corrected resampled t-test, no Holm), `folds_first_better`, `n_folds` |
+
+## `finetune_readout/` (exploratory: fine-tuning with the head on layer 1, `scripts/run_finetune_readout.py`)
+
+`variant`:
+- `E1`: MoLFormer truncated after block 1, MLP head on the masked mean of block 1's tokens; one learning rate for
+  encoder and head (1e-5 / 3e-5 / 1e-4).
+- `E1_2r`: the same with the head at a fixed 1e-3.
+
+Recipe, rows and rate choice as in `finetune/`. Holdout and NIST were run for `E1` only (lower familiar
+stopping-half MAE).
+
+| File / column | Meaning |
+|---|---|
+| `runs/` | One JSON per run (as `finetune/runs/`, plus `variant`) |
+| `selection.csv` | One row per run: `variant`, `regime`, `task`, `lr`, `seed`, `chosen_lr`, `stop_mae_best3`, `best_stop_mae`, `best_epoch`, `epochs_run`, `seconds`, `n_fit` |
+| `predictions.csv` | Kept runs: `variant`, `regime`, `task`, `seed`, `lr`, `inference` (canonical / tta = mean over 10 spellings), `key`, `y_true`, `y_pred` (K) |
+| `task_mae.csv` | Per `variant` × `regime` × `inference` × `task`: `mae` = mean single-seed MAE over 3 seeds (K) |
+| `familiar_folds.csv` | Per familiar fold: canonical MAE (K) of `E1`, `E1_2r`, and for comparison `finetuned`, `frozen_best` (`finetune/c5_folds.csv`), `mlp_hidden_1_R1/R2`, `ridge_hidden_1_matched` (`finetune/head_control/folds.csv`) |
+| `contrasts.csv` | `first` − `second` over 15 folds: `estimate`, `se`, `ci_low`/`ci_high` (estimate ± t(0.975, 14) × se), `p_raw` (corrected resampled t-test, no Holm), `folds_first_better`, `n_folds`, `at_least_1K_better` |

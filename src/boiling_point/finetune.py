@@ -41,6 +41,38 @@ def make_head(hidden: int = 768) -> nn.Module:
     return nn.Sequential(nn.Linear(hidden, 256), nn.GELU(), nn.Dropout(0.1), nn.Linear(256, 1))
 
 
+def layer_index(readout: str):
+    """None for the pooled output; k for "layer:k" (the output of block k,
+    hidden_states[k], as cached under hidden_k)."""
+    if readout == "pooled":
+        return None
+    if readout.startswith("layer:"):
+        k = int(readout.split(":")[1])
+        if k < 1:
+            raise ValueError("readout layer must be a block output (k >= 1)")
+        return k
+    raise ValueError(f"unknown readout {readout!r}")
+
+
+def truncate(model, readout: str):
+    """For "layer:k", keep only the first k blocks: the head never sees the
+    blocks above, so they need not run (their weights would get no gradient)."""
+    k = layer_index(readout)
+    if k is not None:
+        model.encoder.layer = model.encoder.layer[:k]
+    return model
+
+
+def encode(model, batch, readout: str = "pooled"):
+    """(batch, hidden) features the head reads: the model's pooled output, or
+    the masked mean over tokens of block k's output (the cache's pooling)."""
+    k = layer_index(readout)
+    if k is None:
+        return model(**batch).pooler_output
+    out = model(**batch, output_hidden_states=True)
+    return rep.masked_mean(out.hidden_states[k], batch["attention_mask"])
+
+
 def feature_maps(model):
     return [m for m in model.modules() if type(m).__name__ == "MolformerFeatureMap"]
 
@@ -54,35 +86,43 @@ def set_train_mode(model, head):
         m.eval()
 
 
-def predict(model, head, tokenizer, smiles, mean: float, sd: float, batch_size: int = 64) -> np.ndarray:
+def predict(model, head, tokenizer, smiles, mean: float, sd: float, batch_size: int = 64,
+            readout: str = "pooled") -> np.ndarray:
     model.eval()
     head.eval()
     out = []
     with torch.no_grad():
         for i in range(0, len(smiles), batch_size):
             batch = tokenizer(list(smiles[i:i + batch_size]), padding=True, return_tensors="pt")
-            out.append(head(model(**batch).pooler_output).squeeze(-1).numpy())
+            out.append(head(encode(model, batch, readout)).squeeze(-1).numpy())
     return np.concatenate(out) * sd + mean if out else np.array([])
 
 
-def predict_tta(model, head, tokenizer, smiles, mean, sd, n: int = N_TTA, seed: int = 0) -> np.ndarray:
+def predict_tta(model, head, tokenizer, smiles, mean, sd, n: int = N_TTA, seed: int = 0,
+                readout: str = "pooled") -> np.ndarray:
     """Mean prediction over n randomised spellings per molecule (the same
     spellings as the frozen `random10` embeddings: seed 0)."""
     spellings = [v for s in smiles for v in rep.randomized_smiles(s, n, seed)]
-    return predict(model, head, tokenizer, spellings, mean, sd).reshape(len(smiles), n).mean(axis=1)
+    return predict(model, head, tokenizer, spellings, mean, sd, readout=readout).reshape(len(smiles), n).mean(axis=1)
 
 
 # --- one training run ------------------------------------------------------------------------
 
 def train_run(fit_smiles, fit_y, stop_smiles, stop_y, test_smiles, calibrate_smiles, lr: float, seed: int,
               max_epochs: int = MAX_EPOCHS, patience: int = PATIENCE, n_threads: int = 3, tta: bool = True,
-              local_files_only: bool = True) -> dict:
+              local_files_only: bool = True, readout: str = "pooled", head_lr: float = None) -> dict:
     """Fine-tune once and predict. All SMILES are model-input SMILES; stopping
-    and the returned test/calibration predictions use the canonical spelling."""
+    and the returned test/calibration predictions use the canonical spelling.
+
+    readout: "pooled" (the model's pooled output; Step 4) or "layer:k" (the
+    model truncated after block k, head on the masked mean of its tokens).
+    head_lr: None trains encoder and head at `lr` (Step 4); otherwise the head
+    has its own rate."""
     start = time.time()
     torch.manual_seed(seed)
     np.random.seed(seed)
     model, tokenizer = rep.load_molformer("cpu", local_files_only=local_files_only, n_threads=n_threads)
+    truncate(model, readout)
     for p in model.parameters():
         p.requires_grad_(True)
     torch.manual_seed(seed)                       # head initialisation and dropout depend on the seed only
@@ -91,7 +131,12 @@ def train_run(fit_smiles, fit_y, stop_smiles, stop_y, test_smiles, calibrate_smi
     mean, sd = fit_y.mean(), fit_y.std()
     target = torch.tensor((fit_y - mean) / sd, dtype=torch.float32)
     params = list(model.parameters()) + list(head.parameters())
-    optimiser = torch.optim.AdamW(params, lr=lr, weight_decay=WEIGHT_DECAY)
+    if head_lr is None:
+        optimiser = torch.optim.AdamW(params, lr=lr, weight_decay=WEIGHT_DECAY)
+    else:
+        optimiser = torch.optim.AdamW([{"params": list(model.parameters()), "lr": lr},
+                                       {"params": list(head.parameters()), "lr": head_lr}],
+                                      lr=lr, weight_decay=WEIGHT_DECAY)
     steps_per_epoch = int(np.ceil(len(fit_smiles) / BATCH_SIZE))
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimiser, lambda step: min(1.0, (step + 1) / steps_per_epoch))
     rng = np.random.default_rng(seed)
@@ -106,14 +151,15 @@ def train_run(fit_smiles, fit_y, stop_smiles, stop_y, test_smiles, calibrate_smi
         for b in range(steps_per_epoch):
             idx = order[b * BATCH_SIZE:(b + 1) * BATCH_SIZE]
             batch = tokenizer([spellings[i] for i in idx], padding=True, return_tensors="pt")
-            loss = nn.functional.mse_loss(head(model(**batch).pooler_output).squeeze(-1), target[idx])
+            loss = nn.functional.mse_loss(head(encode(model, batch, readout)).squeeze(-1), target[idx])
             optimiser.zero_grad()
             loss.backward()
             nn.utils.clip_grad_norm_(params, CLIP)
             optimiser.step()
             scheduler.step()
             losses.append(loss.item())
-        stop_mae = float(np.mean(np.abs(predict(model, head, tokenizer, stop_smiles, mean, sd) - np.asarray(stop_y))))
+        stop_mae = float(np.mean(np.abs(predict(model, head, tokenizer, stop_smiles, mean, sd, readout=readout)
+                                        - np.asarray(stop_y))))
         log.append({"epoch": epoch, "train_loss": float(np.mean(losses)), "stop_mae": stop_mae})
         if stop_mae < best_mae:
             best_mae, best_epoch, waited = stop_mae, epoch, 0
@@ -130,9 +176,9 @@ def train_run(fit_smiles, fit_y, stop_smiles, stop_y, test_smiles, calibrate_smi
     head.load_state_dict(best_state[1])
     best3 = float(np.mean(sorted(r["stop_mae"] for r in log)[:3]))
     return {"log": log, "best_epoch": best_epoch, "best_stop_mae": best_mae, "stop_mae_best3": best3,
-            "test_canonical": predict(model, head, tokenizer, test_smiles, mean, sd),
-            "test_tta": predict_tta(model, head, tokenizer, test_smiles, mean, sd) if tta else None,
-            "calibrate": predict(model, head, tokenizer, calibrate_smiles, mean, sd),
+            "test_canonical": predict(model, head, tokenizer, test_smiles, mean, sd, readout=readout),
+            "test_tta": predict_tta(model, head, tokenizer, test_smiles, mean, sd, readout=readout) if tta else None,
+            "calibrate": predict(model, head, tokenizer, calibrate_smiles, mean, sd, readout=readout),
             "seconds": time.time() - start}
 
 
