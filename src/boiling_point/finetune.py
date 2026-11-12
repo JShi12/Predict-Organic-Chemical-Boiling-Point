@@ -134,3 +134,59 @@ def train_run(fit_smiles, fit_y, stop_smiles, stop_y, test_smiles, calibrate_smi
             "test_tta": predict_tta(model, head, tokenizer, test_smiles, mean, sd) if tta else None,
             "calibrate": predict(model, head, tokenizer, calibrate_smiles, mean, sd),
             "seconds": time.time() - start}
+
+
+# --- head only, on frozen embeddings (exploratory control for C5) ----------------------------
+
+def train_head(X_fit, y_fit, X_stop, y_stop, X_test, lr: float, seed: int, max_epochs: int = MAX_EPOCHS,
+               patience: int = PATIENCE) -> dict:
+    """train_run's recipe with the encoder frozen: make_head() on fixed
+    embeddings (no spelling augmentation), MSE on standardised targets, AdamW,
+    batch 32, warm-up over the first epoch, gradient clipping, early stopping
+    on the stopping rows' MAE keeping the best epoch's weights."""
+    start = time.time()
+    torch.manual_seed(seed)
+    head = make_head(np.asarray(X_fit).shape[1])
+    fit_y = np.asarray(y_fit, dtype=float)
+    mean, sd = fit_y.mean(), fit_y.std()
+    X = torch.tensor(np.asarray(X_fit), dtype=torch.float32)
+    Xs = torch.tensor(np.asarray(X_stop), dtype=torch.float32)
+    Xt = torch.tensor(np.asarray(X_test), dtype=torch.float32)
+    target = torch.tensor((fit_y - mean) / sd, dtype=torch.float32)
+    optimiser = torch.optim.AdamW(head.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
+    steps_per_epoch = int(np.ceil(len(X) / BATCH_SIZE))
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimiser, lambda step: min(1.0, (step + 1) / steps_per_epoch))
+    rng = np.random.default_rng(seed)
+
+    def predict_head(Z):
+        head.eval()
+        with torch.no_grad():
+            return head(Z).squeeze(-1).numpy() * sd + mean
+
+    log, best_mae, best_state, best_epoch, waited = [], np.inf, None, -1, 0
+    for epoch in range(max_epochs):
+        head.train()
+        order = rng.permutation(len(X))
+        losses = []
+        for b in range(steps_per_epoch):
+            idx = order[b * BATCH_SIZE:(b + 1) * BATCH_SIZE]
+            loss = nn.functional.mse_loss(head(X[idx]).squeeze(-1), target[idx])
+            optimiser.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(head.parameters(), CLIP)
+            optimiser.step()
+            scheduler.step()
+            losses.append(loss.item())
+        stop_mae = float(np.mean(np.abs(predict_head(Xs) - np.asarray(y_stop))))
+        log.append({"epoch": epoch, "train_loss": float(np.mean(losses)), "stop_mae": stop_mae})
+        if stop_mae < best_mae:
+            best_mae, best_epoch, waited = stop_mae, epoch, 0
+            best_state = {k: v.detach().clone() for k, v in head.state_dict().items()}
+        else:
+            waited += 1
+            if waited >= patience:
+                break
+    head.load_state_dict(best_state)
+    best3 = float(np.mean(sorted(r["stop_mae"] for r in log)[:3]))
+    return {"log": log, "best_epoch": best_epoch, "best_stop_mae": best_mae, "stop_mae_best3": best3,
+            "test": predict_head(Xt), "seconds": time.time() - start}

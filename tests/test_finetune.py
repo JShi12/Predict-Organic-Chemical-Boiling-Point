@@ -98,3 +98,31 @@ def test_run_path_handles_family_names_with_a_slash(tmp_path):
     import run_finetuning
     path = run_finetuning.run_path(str(tmp_path), "alcohol/phenol", 1e-5, 0)
     assert path.startswith(f"{tmp_path}/runs/") and "/" not in path[len(f"{tmp_path}/runs/"):]
+
+
+def _head_data(seed=0, n=300, d=8):
+    rng = np.random.default_rng(seed)
+    X = rng.normal(size=(n, d))
+    y = 400 + 30 * X[:, 0] - 20 * np.tanh(X[:, 1]) + rng.normal(0, 1, n)
+    return X[:200], y[:200], X[200:250], y[200:250], X[250:], y[250:]
+
+
+def test_train_head_learns_and_beats_the_mean():
+    pytest.importorskip("torch")
+    from boiling_point import finetune
+    Xf, yf, Xs, ys, Xt, yt = _head_data()
+    r = finetune.train_head(Xf, yf, Xs, ys, Xt, lr=3e-3, seed=0, max_epochs=200, patience=20)
+    mae = np.mean(np.abs(r["test"] - yt))
+    assert mae < 0.3 * np.mean(np.abs(yt - yf.mean()))
+    assert r["best_stop_mae"] == min(e["stop_mae"] for e in r["log"])
+    assert r["log"][r["best_epoch"]]["stop_mae"] == r["best_stop_mae"]
+
+
+def test_train_head_is_deterministic_and_stops_early():
+    pytest.importorskip("torch")
+    from boiling_point import finetune
+    Xf, yf, Xs, ys, Xt, _ = _head_data(1)
+    a = finetune.train_head(Xf, yf, Xs, ys, Xt, lr=1e-3, seed=4, max_epochs=40, patience=3)
+    b = finetune.train_head(Xf, yf, Xs, ys, Xt, lr=1e-3, seed=4, max_epochs=40, patience=3)
+    assert np.array_equal(a["test"], b["test"])
+    assert len(a["log"]) <= 40 and len(a["log"]) - 1 - a["best_epoch"] <= 3

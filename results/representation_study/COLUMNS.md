@@ -189,3 +189,20 @@ Stacking weights are non-negative, sum to 1 and are fitted per task on the out-o
 | `weights.csv` | Per `regime` × `task` × `method` × input `pipeline` (`{representation}_{regressor}`): `weight`; `oof_mae` = the blend's MAE on the out-of-fold training predictions |
 | `metrics.csv` | Per `regime` × `method`: `mae` (mean over tasks), `sd` (SD over tasks), `n_tasks`; `nist_macro_mae` = mean of the 3 NIST subgroup MAEs |
 | `contrasts.csv` | `contrast` = MAE(first) − MAE(second); `setting_as_in` = the C1–C3 setting whose test is used (`test`: corrected t or stratified bootstrap); `estimate`, `se` (corrected t only), `ci_low`, `ci_high` (familiar: estimate ± t(0.975, 14) × se), `p_raw` (no Holm), `n_units`, `per_stratum`; `at_least_1K_better` = estimate ≤ −1.0 K and `ci_high` < 0 |
+
+## `finetune/head_control/` (exploratory: encoder, head and layer in C5, `scripts/run_head_control.py`)
+
+`method`:
+- `mlp_{hidden_1,pooler}_{R1,R2}`: the fine-tuning head (`finetune.make_head`) trained on frozen canonical embeddings
+  at layer 1 or the pooled output. R1 is the fine-tuning recipe (rates 1e-5/3e-5/1e-4, ≤ 30 epochs, patience 5).
+  R2 gives the head room to converge (1e-4/3e-4/1e-3/3e-3, ≤ 300 epochs, patience 20).
+- `ridge_{layer}_matched`: Ridge with the layer probe's alpha, refitted on the same fit rows (~85%).
+- `ridge_{layer}_full`: the layer probe's own test MAE (full training fold).
+- `finetuned`, `frozen_best`: from `finetune/c5_folds.csv`.
+
+| File / column | Meaning |
+|---|---|
+| `runs.csv` | One row per head run: `task`, `layer`, `recipe`, `lr`, `seed`, `best_epoch`, `epochs_run`, `best_stop_mae`, `stop_mae_best3` (rate choice), `seconds`, `chosen_lr` |
+| `predictions.csv` | Test predictions of the kept runs and matched Ridge: `task`, `method`, `seed`, `key`, `y_true`, `y_pred` (K) |
+| `folds.csv` | Per familiar fold (`task`): test MAE (K) per method; MLP = mean single-seed MAE over 3 seeds |
+| `contrasts.csv` | `contrast`, `first` − `second` over 15 folds: `estimate`, `se`, `ci_low`/`ci_high` (estimate ± t(0.975, 14) × se), `p_raw` (corrected resampled t-test, no Holm), `folds_first_better`, `n_folds` |
