@@ -73,3 +73,63 @@ def test_build_label_audit_merges_checks_and_marks_exclusions():
     assert audit.loc["fine alcohol", "category"] == "NIST agrees"
     assert audit["exclude"].to_dict() == {"butane (Joback)": True, "bad decyne": True, "typo": True,
                                           "odd amine": False, "fine alcohol": False}
+
+
+@pytest.mark.parametrize("smiles, mirror", [
+    ("C[C@@H](O)[C@@H](C)O", "C[C@H](O)[C@H](C)O"),   # (R,R) -> (S,S)
+    ("C[C@H](O)[C@@H](C)O", "C[C@H](O)[C@@H](C)O"),   # meso is its own mirror image
+    ("OC/C=C/CO", "OC/C=C/CO"),                        # double-bond geometry is unchanged
+])
+def test_mirror_image_smiles_inverts_only_tetrahedral_centres(smiles, mirror):
+    from boiling_point.audit import mirror_image_smiles
+    assert mirror_image_smiles(smiles) == mirror
+
+
+def test_stereoisomer_conflicts_excludes_a_label_contradicting_its_enantiomer():
+    from boiling_point.audit import stereoisomer_conflicts
+    df = pd.DataFrame({"cmpdname": ["unspecified", "meso", "R,R", "S,S"],
+                       "isosmiles": ["CC(O)C(C)O", "C[C@H](O)[C@@H](C)O", "C[C@@H](O)[C@@H](C)O",
+                                     "C[C@H](O)[C@H](C)O"],
+                       "boiling_point_kelvin": [455.15, 456.65, 350.5, 453.65]})
+
+    out = stereoisomer_conflicts(df).set_index("cmpdname")
+
+    assert out.index.tolist() == ["R,R"]                 # the consistent labels aren't flagged
+    assert out.loc["R,R", "category"] == "stereoisomer conflict"
+    assert out.loc["R,R", "exclude"]
+    assert "enantiomer S,S is 453.65 K" in out.loc["R,R", "evidence"]
+
+
+def test_stereoisomer_conflicts_only_flags_cis_trans_and_two_label_conflicts():
+    from boiling_point.audit import stereoisomer_conflicts
+    df = pd.DataFrame({"cmpdname": ["trans", "cis", "R", "S", "unrelated"],
+                       "isosmiles": ["OC/C=C/CO", "OC/C=C\\CO", "C[C@@H](O)CC", "C[C@H](O)CC", "CCCO"],
+                       "boiling_point_kelvin": [404.15, 508.15, 372.0, 300.0, 370.0]})
+
+    out = stereoisomer_conflicts(df).set_index("cmpdname")
+
+    # cis/trans can genuinely differ; an enantiomer pair alone gives no majority
+    assert sorted(out.index) == ["R", "S", "cis", "trans"]
+    assert (out["category"] == "stereoisomer conflict, unverified").all()
+    assert not out["exclude"].any()
+
+
+def test_stereoisomer_conflicts_ignores_spreads_within_tolerance():
+    from boiling_point.audit import stereoisomer_conflicts
+    df = pd.DataFrame({"cmpdname": ["E", "Z"], "isosmiles": ["C/C=C/CC", "C/C=C\\CC"],
+                       "boiling_point_kelvin": [309.5, 310.0]})
+    assert stereoisomer_conflicts(df).empty
+
+
+def test_build_label_audit_notes_add_evidence_without_changing_exclusion():
+    from boiling_point.audit import build_label_audit
+    df = pd.DataFrame({"cmpdname": ["trans", "cis"], "isosmiles": ["OC/C=C/CO", "OC/C=C\\CO"],
+                       "boiling_point_kelvin": [404.15, 508.15]})
+    nist = pd.DataFrame({"cmpdname": [], "nist_tb": []})
+
+    audit = build_label_audit(df, nist, {}, notes={"cis": "PubChem agrees"}).set_index("cmpdname")
+
+    assert audit.loc["cis", "evidence"].endswith("; PubChem agrees")
+    assert not audit["exclude"].any()
+    with pytest.raises(ValueError, match="no audit check flagged"):
+        build_label_audit(df, nist, {}, notes={"unknown": "x"})

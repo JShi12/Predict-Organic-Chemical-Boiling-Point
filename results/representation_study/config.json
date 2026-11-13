@@ -1,0 +1,141 @@
+{
+ "molformer": {
+  "model_id": "ibm-research/MoLFormer-XL-both-10pct",
+  "revision": "361063d0ad524ef77cf39b08469f6be770dc550f",
+  "code_sha256": {
+   "modeling_molformer.py": "6f1ef72022de2c69e95661899422a7bb39a40a2cc5a6cb6216f14e9b7d84559c",
+   "configuration_molformer.py": "b88ea8d4b7b5e54f4f186cc7a230eff308928020a030f153a038fd12c05e3bed"
+  },
+  "pooling": "masked mean over tokens incl. <bos>/<eos>, excl. padding",
+  "layers": [
+   "hidden_0",
+   "hidden_1",
+   "hidden_2",
+   "hidden_3",
+   "hidden_4",
+   "hidden_5",
+   "hidden_6",
+   "hidden_7",
+   "hidden_8",
+   "hidden_9",
+   "hidden_10",
+   "hidden_11",
+   "hidden_12",
+   "pooler"
+  ],
+  "smiles_prep": "1: stereochemistry and isotope labels removed, RemoveHs, RDKit canonical"
+ },
+ "morgan": {
+  "radius": 2,
+  "n_bits": 2048,
+  "type": "counts"
+ },
+ "frozen_comparison": {
+  "ridge_alphas": [
+   0.01,
+   0.1,
+   1,
+   10,
+   100,
+   1000.0,
+   10000.0,
+   100000.0
+  ],
+  "xgboost_grid": {
+   "max_depth": [
+    3,
+    5,
+    7
+   ],
+   "min_child_weight": [
+    3,
+    5
+   ],
+   "learning_rate": [
+    0.01,
+    0.1
+   ],
+   "n_estimators": [
+    300,
+    500
+   ]
+  },
+  "inner_folds": 3,
+  "selection_metric": "inner-CV MAE"
+ },
+ "fine_tuning": {
+  "learning_rates": [
+   1e-05,
+   3e-05,
+   0.0001
+  ],
+  "batch_size": 32,
+  "max_epochs": 30,
+  "patience": 5,
+  "weight_decay": 0.01,
+  "gradient_clip": 1.0,
+  "n_spellings_at_inference": 10,
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "validation_fraction": 0.15,
+  "validation_seed": 0
+ },
+ "statistics": {
+  "bootstrap_draws": 10000,
+  "bootstrap_seed": 0,
+  "alpha": 0.05,
+  "minimum_meaningful_difference_K": 1.0,
+  "multiple_comparisons": "Holm (1979) across C1-C5"
+ },
+ "learning_curve_sizes": [
+  100,
+  250,
+  500
+ ],
+ "prediction_interval_miscoverage": 0.1,
+ "exploratory": {
+  "stacking_variants": [
+   "S0",
+   "S1",
+   "S1m",
+   "S2",
+   "S1_abs",
+   "S0_abs",
+   "average"
+  ],
+  "head_control_recipes": {
+   "R1": {
+    "lrs": [
+     1e-05,
+     3e-05,
+     0.0001
+    ],
+    "max_epochs": 30,
+    "patience": 5
+   },
+   "R2": {
+    "lrs": [
+     0.0001,
+     0.0003,
+     0.001,
+     0.003
+    ],
+    "max_epochs": 300,
+    "patience": 20
+   }
+  },
+  "early_layer_fine_tuning": {
+   "E1": {
+    "readout": "layer:1",
+    "head_lr": null
+   },
+   "E1_2r": {
+    "readout": "layer:1",
+    "head_lr": 0.001
+   }
+  }
+ }
+}

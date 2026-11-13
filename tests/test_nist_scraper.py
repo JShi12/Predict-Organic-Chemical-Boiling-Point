@@ -54,3 +54,21 @@ def test_select_targeted_candidates_applies_all_filters():
     result = select_targeted_candidates(df, already_have_names={"Simple Diol"})
 
     assert list(result) == ["Undecaethylene glycol"]
+
+
+def test_lookup_all_boiling_points_by_inchi_keeps_every_value(monkeypatch):
+    from types import SimpleNamespace
+    from boiling_point import nist_scraper
+    searches = []
+
+    def fake_search(identifier, search_type, use_SI=True):
+        searches.append((identifier, search_type))
+        return SimpleNamespace(compounds=[SimpleNamespace(ID="C71363")] if identifier == "InChI=found" else [])
+
+    monkeypatch.setattr(nist_scraper.nist, "run_search", fake_search)
+    monkeypatch.setattr(nist_scraper, "fetch_boiling_point", lambda cid: [390.8, 390.7, 355.7])
+
+    assert nist_scraper.lookup_all_boiling_points_by_inchi("InChI=found", crawl_delay=0) == \
+        ("C71363", [390.8, 390.7, 355.7], "found")
+    assert nist_scraper.lookup_all_boiling_points_by_inchi("InChI=missing", crawl_delay=0) == ("", [], "not_found")
+    assert searches[0] == ("InChI=found", "inchi")

@@ -8,7 +8,8 @@ Predicting the normal boiling point of organic compounds from molecular structur
 - predictive models;
 - honest evaluation;
 - an audit of which training labels are real measurements;
-- active learning and Bayesian optimisation to decide which experiments to run next.
+- active learning and Bayesian optimisation to decide which experiments to run next;
+- a pre-registered test of whether a pretrained chemical language model beats conventional features.
 
 On the 1,251 compounds with measured boiling points, the best models reach **~10.7 K mean absolute error (~22 K RMSE)** under nested, family-stratified cross-validation. Choosing experiments with Bayesian optimisation finds **69% of the compounds that meet a boiling-point spec after measuring only 12% of the candidates**.
 
@@ -21,11 +22,13 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 | 3. [`Boiling_Point_RDKit.ipynb`](Boiling_Point_RDKit.ipynb) | Do physically motivated descriptors help, measured without split luck? | Nested CV shows the original single-split result (26 K RMSE) was an easy split. Curated RDKit descriptors win by MAE but lose by RMSE, because of ~20 extreme compounds. |
 | 4. [`Label_Audit.ipynb`](Label_Audit.ipynb) | Which labels are real measurements? | Of 1,588 labels, 327 are Joback estimates rather than measurements. 58 involve >20 heavy atoms, where Joback shows substantial positive bias in our dataset, and 10 more fail independent checks (measured values, supplier data, or physical plausibility). On the 1,251 measured labels, curated descriptors achieve **~10.7 K MAE**. |
 | 5. [`Bayesian_Optimisation.ipynb`](Bayesian_Optimisation.ipynb) | How few experiments find the compounds that meet a spec? | For a 453–473 K window, batch BO finds 69% of in-spec compounds after 12% of the experiments: 5.4× random, better than every alternative in 20/20 seeds. |
+| 6. [`Representation_Study.ipynb`](Representation_Study.ipynb) | Do pretrained chemical-language-model embeddings beat conventional features? | Frozen MoLFormer matches the curated descriptors on familiar chemistry (MAE 11.43 vs 11.00 K) but is far worse on unseen families (+9.67 K) and unfamiliar NIST compounds (+128.7 K). Fine-tuning doesn't help (+2.27 K). The curated descriptors are best or level in every regime. |
 
 **What the project shows:**
 - **Check the labels before comparing models.** The biggest improvement came from finding that a fifth of the labels were computed estimates, not from better features or models.
 - **One test split can mislead.** The original 26 K RMSE came from an unusually easy split; repeated, stratified CV gives ~32 K for the same kind of model.
 - **Acquisition functions must match the goal.** "Probability of meeting a spec" finds 67% more in-spec compounds than qLogEI aimed at a target value.
+- **A pretrained model has to earn its place on the target chemistry.** MoLFormer matched the descriptors on familiar molecules but failed under shift, and the fixed tests with a 1.0 K minimum difference kept small familiar-chemistry gaps from being read as wins.
 - **Real experiments need feasibility built in.** Uncertainty alone chose compounds that decompose before boiling; weighting by a learned chance of success raised the hit rate from 0.5% to 35%.
 
 ## 1. Baseline models
@@ -67,6 +70,7 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 - **Joback estimates are decent for small molecules but 100–250 K too high beyond ~20 heavy atoms.** Those were exactly the "extreme compounds" the models kept underpredicting.
 - **On the 1,251 measured labels, curated descriptors win clearly:** ensemble MAE 10.8 vs 12.9 K, better in 15/15 folds.
 - **On the same compounds, training without the suspect labels lowers MAE from 14.0 to 10.8 K,** even with ~20% less training data. The audit outcome for every flagged compound is in [`data/label_audit.csv`](data/label_audit.csv).
+- **Later addition (representation study):** a stereoisomer-consistency check also excludes (R,R)-2,3-butanediol. Its label, 350.5 K, contradicts its enantiomer's 453.65 K, and enantiomers boil at the same temperature. `data/label_audit.csv` therefore now lists 1,250 measured labels. Parts 3–5 report results on the 1,251 and were not re-run; re-running their scripts uses the 1,250, which also reassigns every cross-validation fold.
 
 ## 5. Bayesian optimisation: finding compounds that meet a spec
 
@@ -86,11 +90,60 @@ On the 1,251 compounds with measured boiling points, the best models reach **~10
 - **qLogEI stalls** because it chases ever-closer matches to 463 K rather than everything in the window.
 - **Blind spot:** small diols (ethylene glycol, propylene glycol) boil like molecules twice their size, and BO rarely finds them.
 
+## 6. Representation study: do pretrained chemical-language-model embeddings help?
+
+![Best pipeline per representation in the three regimes](results/images/representation_headline.png)
+
+**Question.** Does a pretrained chemical language model, MoLFormer-XL, represent molecules better for boiling-point prediction than conventional features, especially for unfamiliar chemistry and with few labels? And can its uncertainty be trusted? The hypotheses and five confirmatory tests were fixed before any model was run.
+
+**Design.**
+- **Representations:**
+  - 43 curated RDKit descriptors (log-transformed size and shape terms);
+  - Morgan counts (radius 2, 2,048 bins);
+  - MoLFormer-XL embeddings, used two ways: frozen (each layer mean-pooled, with the layer chosen in the inner cross-validation) and fine-tuned (all 44.4M weights).
+- **Regressors:** Ridge and XGBoost, tuned in an inner cross-validation. The better of the two is each representation's **best pipeline**.
+- **Three regimes:**
+  - **Familiar chemistry:** 5-fold cross-validation repeated 3 times, stratified by family and grouped by structure, so stereoisomers never sit on both sides of a split.
+  - **Unseen functional group:** leave one family out.
+  - **Unseen elements and rings:** train on all 1,250 acyclic C/H/N/O compounds, test on 211 NIST compounds.
+- **Tests:**
+  - the corrected resampled t-test (Nadeau & Bengio 2003) or a stratified bootstrap;
+  - Holm's correction across C1–C5;
+  - a finding needs Holm p < 0.05 *and* at least 1.0 K, a threshold set from the label noise floor.
+
+| Test | MAE difference (positive = first is worse) | Estimate [95% CI] | Holm p | Finding |
+|---|---|---|---|---|
+| C1 | Frozen MoLFormer − curated, familiar chemistry | +0.43 K | 1.000 | no |
+| C2 | Frozen MoLFormer − curated, held-out families (mean of 4) | +9.67 K [8.40, 10.95] | ≤ 0.001 | yes: MoLFormer worse |
+| C3 | Frozen MoLFormer − curated, NIST (mean of 3 subgroups) | +128.69 K [105.96, 152.70] | ≤ 0.001 | yes: MoLFormer worse |
+| C4 | Frozen MoLFormer − curated, familiar, 100 training molecules | −0.42 K | 1.000 | no |
+| C5 | Fine-tuned − frozen MoLFormer, familiar chemistry | +2.27 K | 0.003 | yes: fine-tuned worse |
+
+**Findings.**
+- **Familiar chemistry: MoLFormer matches the descriptors but doesn't beat them** (11.43 vs 11.00 K), also with only 100 training molecules.
+- **Unfamiliar chemistry: frozen embeddings generalise worse.** A linear readout extrapolates without bound, predicting down to −722.4 K for iodobenzene.
+- **Fine-tuning doesn't rescue it.** It removes the NIST blow-up (79.05 K) but is worse on familiar chemistry.
+  - **Why (exploratory):** with frozen embeddings, layer 1 beats the pooled output that the fine-tuning head reads by 2.39 K. Moving the fine-tuned head to layer 1 doesn't help, though (14.20 vs 13.70 K). Training the encoder on ~850 molecules makes layer 1 itself worse.
+- **Error bars hold only for familiar chemistry.** Conformal 90% intervals cover 0.905–0.940 there, against 0.634–0.839 on held-out families and 0.171–0.322 on NIST. Distance to the training set is the more reliable warning for novel compounds.
+- **Exploratory:**
+  - Stacking MoLFormer with the descriptors gains 0.79 K on familiar chemistry (the interval includes 0) and costs accuracy under shift.
+  - Frozen MoLFormer needs canonical SMILES: a random spelling of the same molecules raises its MAE to 21.07 K.
+
+**Limitations.**
+- **Pretraining overlap:** MoLFormer was pretrained on 10% of PubChem and 10% of ZINC15, so it may have seen some of these structures, but not their boiling points.
+- **Narrow training set:** no training molecule has a ring or a halogen.
+- **The NIST set isn't a random sample:** it came from targeted lookups, and 116 of its 211 labels rest on one measurement.
+- **No stereochemistry:** all representations use stereo-free SMILES.
+- **Limited scope:** one language model and one CPU fine-tuning recipe were tested.
+
+Details are in the notebook's Limitations section. The scripts and their timings are under [Setup & usage](#setup--usage); the MoLFormer parts need `requirements-lm.txt`.
+
 ## Data
 
 - **Literature boiling points:** [`data/compound_boiling_points_from_literature.xlsx`](data/compound_boiling_points_from_literature.xlsx), from a [J. Chem. Educ. article](https://pubs.acs.org/doi/10.1021/acs.jchemed.3c01040). 1,748 records, 1,588 after merging with PubChem on compound name. Part 4 shows 327 of them are estimates.
 - **PubChem properties:** the full 77 MB download isn't committed. [`data/pubchem_subset.csv`](data/pubchem_subset.csv) (1.1 MB) holds every row the project uses, and the loader falls back to it automatically, with identical results. `scripts/build_pubchem_subset.py` rebuilds it from the full file.
 - **NIST WebBook lookups:** `data/nist_boiling_points_*.csv` and `data/compound_boiling_points_from_nist.csv` hold the heuristic, uncertainty-only and feasibility-aware collection rounds. The scraper respects NIST's 5-second crawl delay and is not affiliated with NIST.
+- **Noise-floor lookups:** [`data/nist_noise_floor_lookups.csv`](data/nist_noise_floor_lookups.csv) holds every NIST measurement for a random, family-stratified sample of 100 measured compounds, searched by InChI. Columns are described in [`data/COLUMNS.md`](data/COLUMNS.md).
 
 ## Setup & usage
 
@@ -99,8 +152,9 @@ git clone https://github.com/JShi12/Predict-Organic-Chemical-Boiling-Point.git
 cd Predict-Organic-Chemical-Boiling-Point
 python3.11 -m venv venv && source venv/bin/activate    # Python 3.11+ (BoTorch needs >= 3.10)
 pip install -r requirements.txt                        # pinned versions + this package (editable)
-pytest tests/                                          # 78 tests
-jupyter notebook                                       # open any of the five notebooks
+pytest tests/                                          # 161 tests
+pip install -r requirements-lm.txt                     # optional: chemical-language-model study
+jupyter notebook                                       # open any of the six notebooks
 ```
 
 The notebooks load precomputed results. To regenerate them:
@@ -112,29 +166,48 @@ The notebooks load precomputed results. To regenerate them:
 | `scripts/run_feature_study.py [--audited]` | parts 3–4 nested CV | ~4 min each |
 | `scripts/audit_labels.py` | `data/label_audit.csv` | seconds |
 | `scripts/run_bo_campaign.py` | part 5 campaigns | ~3 min |
+| `scripts/build_representation_splits.py` | representation study: fixed splits and NIST test set | seconds |
+| `scripts/lookup_noise_floor.py` | `data/nist_noise_floor_lookups.csv` (network, resumable) | ~20 min |
+| `scripts/compare_grouped_splits.py` | grouped vs ungrouped folds | ~6 min |
+| `scripts/run_representation_study.py --stage A` / `--stage B` | frozen-representation comparison: Ridge / XGBoost (`results/representation_study/frozen/`) | ~1 min / ~60 min |
+| `scripts/build_representations.py` | MoLFormer embedding cache (`data/cache/`, not committed) and label-free probes; needs `requirements-lm.txt` | ~1.5 min |
+| `scripts/run_finetuning.py --shard i --n-shards 3`, then `--collect` | fine-tuned MoLFormer, 125 runs in 3 parallel processes (resumable), then C5 (`results/representation_study/finetune/`); needs `requirements-lm.txt` | a few hours on CPU |
+| `scripts/run_uncertainty.py` | 90% prediction intervals (CV+, split conformal), uncertainty ranking (`results/representation_study/uncertainty/`) | seconds |
+| `scripts/run_learning_curves.py` | learning curves at n = 100/250/500 and C4 (`results/representation_study/learning_curve/`) | ~55 min (8 workers) |
+| `scripts/confirmatory.py` | C1–C5 with Holm and the 1.0 K rule (`results/representation_study/confirmatory.csv`) | seconds |
+| `scripts/morgan_descriptive.py` | descriptive Morgan − curated and Morgan − MoLFormer contrasts, same tests as C1–C4, raw p only (`results/representation_study/morgan_descriptive.csv`) | seconds |
+| `scripts/embed_spellings.py` | per-spelling MoLFormer embeddings for the spelling probe (`data/cache/molformer/spellings/`, not committed); needs `requirements-lm.txt` | ~1 min |
+| `scripts/error_analysis.py` | exploratory error analysis: errors by attribute and distance, NIST single-measurement labels, largest disagreements, spelling sensitivity (`results/representation_study/error_analysis/`) | seconds |
+| `scripts/run_combined.py --stage concat` then `--stage stack` | exploratory: stacking the frozen pipelines and Ridge on descriptors + embedding (`results/representation_study/combined/`) | ~20 s, then seconds |
+| `scripts/run_head_control.py` | exploratory: the fine-tuning head on frozen embeddings (layer 1, pooled output), to separate encoder, head and layer in C5 (`results/representation_study/finetune/head_control/`) | ~1 min |
+| `scripts/write_study_config.py` | the study's settings, read from the code (`results/representation_study/config.json`) | seconds |
+| `scripts/run_finetune_readout.py --phase familiar\|transfer --shard i`, then `--collect` | exploratory: fine-tuning MoLFormer truncated after block 1, head on layer 1 (`results/representation_study/finetune_readout/`); `--check-default` confirms the Step 4 path is unchanged | ~25 min (familiar, 4 shards), ~5 min (transfer) |
 
 ## Project structure
 
 ```
-├── *.ipynb                     # the five notebooks (see Results at a glance)
+├── *.ipynb                     # the six notebooks (see Results at a glance)
 ├── src/boiling_point/          # reusable code
 │   ├── data.py, features.py, preprocessing.py, models.py, ensemble.py, evaluation.py   # part 1
 │   ├── active_learning.py, nist_scraper.py                                             # part 2
 │   ├── descriptors.py, families.py, validation.py                                      # part 3
 │   ├── audit.py                                                                         # part 4
 │   ├── bayes_opt.py                                                                     # part 5
+│   ├── splits.py, representations.py, study.py, study_stats.py, finetune.py, conformal.py, error_analysis.py, stacking.py  # representation study
 │   └── viz.py                                                                           # shared plots
 ├── scripts/                    # long-running experiments (table above)
 ├── tests/                      # unit tests, run in CI
 ├── pyproject.toml              # package metadata (pip install -e .) and pytest config
 ├── data/                       # literature labels, NIST rounds, PubChem subset, label audit
-└── results/                    # precomputed results (CSV) and figures (images/)
+└── results/                    # precomputed results (CSV) and figures (images/);
+                                #   representation_study/ holds the study's fixed splits
 ```
 
 ## Next steps
 
 - **Broader chemistry:** rings, aromatics, carbonyls and halogens (the 105 halogenated NIST compounds are a start), where richer descriptors should matter most.
 - **Multi-objective and constrained BO:** e.g. a boiling-point window plus a viscosity or safety constraint (qNEHVI), and cost-aware acquisition.
+- **Pretrained representations, given more to work with:** other chemical language models, parameter-efficient fine-tuning (low-rank adapters), and training data that includes rings and halogens, where pretraining might matter more.
 - **Exploration for blind spots:** reserve part of each batch for the most uncertain candidates, to reach separate regions of good candidates such as the small diols.
 
 ## License

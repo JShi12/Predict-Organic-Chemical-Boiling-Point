@@ -121,6 +121,25 @@ def scrape_boiling_points(names, output_path: str, crawl_delay: float = CRAWL_DE
             f.flush()
 
 
+def lookup_all_boiling_points_by_inchi(inchi: str, crawl_delay: float = CRAWL_DELAY_SECONDS):
+    """Every NIST normal-boiling-point measurement (K) for the compound with
+    this InChI, sleeping crawl_delay after each request. Searching by InChI
+    pins the exact structure, which a name search can't guarantee.
+    Returns (compound_id, values, status), status as in lookup_boiling_point."""
+    try:
+        search = nist.run_search(inchi, "inchi", use_SI=True)
+        time.sleep(crawl_delay)
+        if not search.compounds:
+            return "", [], "not_found"
+        compound = search.compounds[0]
+        compound_id = getattr(compound, "ID", None) or getattr(compound, "compound_id", None)
+        values = fetch_boiling_point(compound_id)
+        time.sleep(crawl_delay)
+        return compound_id, values, "found" if values else "no_boiling_point"
+    except Exception as e:
+        return "", [], f"error:{e}"
+
+
 def lookup_boiling_point(name: str, crawl_delay: float = CRAWL_DELAY_SECONDS) -> list:
     """Look up one compound on NIST WebBook, sleeping crawl_delay after each
     request. Returns a row matching CSV_FIELDS; status is found /

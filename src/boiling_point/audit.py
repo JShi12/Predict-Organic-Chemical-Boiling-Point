@@ -1,6 +1,6 @@
 """Label audit: which boiling points are estimates or wrong?
 
-Three checks, none of which uses a model's predictions to decide:
+Four checks, none of which uses a model's predictions to decide:
 - Joback estimates: Joback & Reid's group-contribution method predicts
   Tb = 198.2 K + a fixed amount per structural group. A label that equals
   this sum to the hundredth of a kelvin was almost certainly computed, not
@@ -12,6 +12,11 @@ Three checks, none of which uses a model's predictions to decide:
   gets wrong by a large margin in the same direction (consistent
   disagreement only *nominates* compounds for checking; the evidence is the
   independent value).
+- Stereoisomer consistency: labels for the same structure (ignoring
+  stereochemistry) that differ by more than a tolerance. Enantiomers have
+  identical boiling points, so a label that disagrees with its enantiomer
+  *and* with every other label for that structure is excluded. Other
+  conflicts (e.g. cis vs trans, which really can differ) are only flagged.
 
 Only the acyclic groups that occur in this dataset (C, H, N, O) are
 implemented; joback_tb returns None for anything else (rings, halogens,
@@ -115,13 +120,82 @@ def implausible_hydrocarbons(df: pd.DataFrame, margin: float = 80.0, smiles_col:
     return out[out["below_n_alkane"] > margin]
 
 
+def stereo_free_smiles(smiles: str) -> str:
+    """Canonical SMILES with chirality and double-bond geometry removed."""
+    return Chem.MolToSmiles(Chem.MolFromSmiles(smiles), isomericSmiles=False)
+
+
+def mirror_image_smiles(smiles: str) -> str:
+    """Canonical isomeric SMILES of the mirror image: every tetrahedral centre
+    inverted, double-bond geometry unchanged. Equals the input's canonical
+    SMILES for achiral molecules (including meso forms)."""
+    mol = Chem.MolFromSmiles(smiles)
+    swap = {Chem.ChiralType.CHI_TETRAHEDRAL_CW: Chem.ChiralType.CHI_TETRAHEDRAL_CCW,
+            Chem.ChiralType.CHI_TETRAHEDRAL_CCW: Chem.ChiralType.CHI_TETRAHEDRAL_CW}
+    for atom in mol.GetAtoms():
+        if atom.GetChiralTag() in swap:
+            atom.SetChiralTag(swap[atom.GetChiralTag()])
+    return Chem.MolToSmiles(mol)
+
+
+def stereoisomer_conflicts(df: pd.DataFrame, tolerance: float = 30.0, smiles_col: str = "isosmiles",
+                           label_col: str = "boiling_point_kelvin") -> pd.DataFrame:
+    """Rows whose structure (ignoring stereochemistry) has labels spreading
+    more than `tolerance` K, with columns cmpdname, label, category, evidence,
+    exclude.
+
+    A label is excluded only when all of these hold: the structure has 3 or
+    more labels; the label is more than `tolerance` from the median of the
+    others; the others agree within `tolerance`; and its enantiomer is among
+    them, more than `tolerance` away (enantiomers boil at the same
+    temperature). Every other conflict is flagged without excluding, because
+    diastereomers (cis/trans, meso) really can differ and two labels give no
+    majority."""
+    work = df[["cmpdname", smiles_col, label_col]].copy()
+    work["group"] = work[smiles_col].map(stereo_free_smiles)
+    work["canonical"] = work[smiles_col].map(lambda s: Chem.MolToSmiles(Chem.MolFromSmiles(s)))
+    work["mirror"] = work[smiles_col].map(mirror_image_smiles)
+    rows = []
+    for _, group in work.groupby("group"):
+        labels = group[label_col]
+        if len(group) < 2 or labels.max() - labels.min() <= tolerance:
+            continue
+        excluded = []
+        if len(group) >= 3:
+            for idx, r in group.iterrows():
+                others = group.drop(index=idx)
+                enantiomers = others[(others["canonical"] == r["mirror"]) & (r["mirror"] != r["canonical"])]
+                if (abs(r[label_col] - others[label_col].median()) > tolerance
+                        and others[label_col].max() - others[label_col].min() <= tolerance
+                        and (abs(enantiomers[label_col] - r[label_col]) > tolerance).any()):
+                    excluded.append(idx)
+        members = "; ".join(f"{n} {t:.2f} K" for n, t in zip(group["cmpdname"], labels))
+        for idx in excluded:
+            r = group.loc[idx]
+            enantiomer = group[group["canonical"] == r["mirror"]].iloc[0]
+            rows.append({"cmpdname": r["cmpdname"], "label": r[label_col], "category": "stereoisomer conflict",
+                         "evidence": f"enantiomer {enantiomer['cmpdname']} is {enantiomer[label_col]:.2f} K "
+                                     f"(enantiomers boil at the same temperature); same structure: {members}",
+                         "exclude": True})
+        if not excluded:
+            for _, r in group.iterrows():
+                rows.append({"cmpdname": r["cmpdname"], "label": r[label_col],
+                             "category": "stereoisomer conflict, unverified",
+                             "evidence": f"labels for the same structure differ by more than {tolerance:.0f} K: "
+                                         f"{members}",
+                             "exclude": False})
+    return pd.DataFrame(rows, columns=["cmpdname", "label", "category", "evidence", "exclude"])
+
+
 def build_label_audit(df: pd.DataFrame, nist_lookups: pd.DataFrame, known_errors: dict,
-                      nist_tolerance: float = 30.0) -> pd.DataFrame:
+                      nist_tolerance: float = 30.0, notes: dict | None = None) -> pd.DataFrame:
     """One row per audited compound: category, evidence, and whether it is
     excluded from the measured-labels dataset.
 
     nist_lookups: NIST results for the model-flagged compounds (columns
-    cmpdname, nist_tb). known_errors: {name: evidence} found earlier."""
+    cmpdname, nist_tb). known_errors: {name: evidence} found earlier.
+    notes: {name: evidence} appended to an already-flagged compound's
+    evidence without changing whether it is excluded."""
     rows = []
     joback = joback_matches(df)
     for _, r in joback[joback["label_is_joback"]].iterrows():
@@ -150,10 +224,17 @@ def build_label_audit(df: pd.DataFrame, nist_lookups: pd.DataFrame, known_errors
     for name, evidence in known_errors.items():
         rows.append({"cmpdname": name, "label": labels.get(name, np.nan),
                      "category": "known data-entry error", "evidence": evidence, "exclude": True})
+    # Compare stereoisomers only among labels that survive the other checks
+    already_excluded = {r["cmpdname"] for r in rows if r["exclude"]}
+    rows.extend(stereoisomer_conflicts(df[~df["cmpdname"].isin(already_excluded)]).to_dict("records"))
     audit = pd.DataFrame(rows)
     # A compound can be caught by more than one check: keep one row, excluded if any check excludes it
     audit["exclude"] = audit.groupby("cmpdname")["exclude"].transform("max")
     audit["category"] = audit.groupby("cmpdname")["category"].transform(lambda c: "; ".join(dict.fromkeys(c)))
     audit["evidence"] = audit.groupby("cmpdname")["evidence"].transform(lambda c: "; ".join(dict.fromkeys(c)))
+    for name, note in (notes or {}).items():
+        if name not in set(audit["cmpdname"]):
+            raise ValueError(f"note for {name!r}, which no audit check flagged")
+        audit.loc[audit["cmpdname"] == name, "evidence"] += f"; {note}"
     return audit.drop_duplicates("cmpdname").sort_values(["exclude", "category", "cmpdname"],
                                                          ascending=[False, True, True]).reset_index(drop=True)
