@@ -122,7 +122,9 @@ def save(tables: dict, out: str, prefix: str):
         if len(table):
             # the CV+ tables (for Step 5's intervals) are large, so they're gzipped
             suffix = ".csv.gz" if name.startswith("cvplus") else ".csv"
-            table.to_csv(f"{out}/{prefix}{name}{suffix}", index=False)
+            # fixed gzip timestamp, so a re-run gives identical bytes
+            table.to_csv(f"{out}/{prefix}{name}{suffix}", index=False,
+                         compression={"method": "gzip", "mtime": 0} if suffix == ".csv.gz" else "infer")
 
 
 def stage_a(d, tasks, out, n_jobs, alphas):

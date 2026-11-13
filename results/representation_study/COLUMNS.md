@@ -26,6 +26,14 @@ Written by `scripts/build_representation_splits.py`; settings and seeds are in `
 | `single_measurement` | `n_measurements == 1` |
 | `nn_tanimoto_train` | Highest Tanimoto similarity (Morgan radius 2, 2048 bits) to any training compound |
 
+## `config.json` (`scripts/write_study_config.py`)
+
+The study's settings, read from the code that produced the results: MoLFormer model id, revision, code hashes,
+pooling and layers; Morgan radius and size; Ridge alphas, XGBoost grid and inner folds; fine-tuning constants
+(learning rates, batch, epochs, patience, weight decay, clipping, seeds, validation split); bootstrap draws, α,
+the 1.0 K minimum meaningful difference; learning-curve sizes; interval miscoverage; and the exploratory variants.
+Split settings are in `splits_config.json`.
+
 ## `grouped_vs_ungrouped.csv`
 
 Fold metrics from `scripts/compare_grouped_splits.py`; `splits` is `grouped` (structure-grouped folds) or

@@ -149,7 +149,7 @@ def main():
     iv = pd.concat(frozen_intervals(d, tasks, group_of, distance) + finetuned_intervals(d, tasks, group_of, distance),
                    ignore_index=True)
     os.makedirs(OUT, exist_ok=True)
-    iv.to_csv(f"{OUT}/intervals.csv.gz", index=False)
+    iv.to_csv(f"{OUT}/intervals.csv.gz", index=False, compression={"method": "gzip", "mtime": 0})  # byte-reproducible
     cov = coverage_table(iv)
     cov.to_csv(f"{OUT}/coverage.csv", index=False)
     sp = spearman_table(iv)
